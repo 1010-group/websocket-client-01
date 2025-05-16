@@ -43,4 +43,3 @@ root.render(
     </PersistGate>
   </Provider>
 );
-("");
