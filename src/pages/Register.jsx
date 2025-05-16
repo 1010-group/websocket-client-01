@@ -1,144 +1,139 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [phone, setphone] = useState("");
-    const [age, setAge] = useState("");
-    const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    profilePic: "",
+    description: "",
+    phone: "",
+    birthDate: "",
+  });
 
-    const requestRegister = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await fetch('http://localhost:3000/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    email,
-                    password,
-                    phone,
-                    age,
-                    address: {
-                        street: "None",
-                        city: "None",
-                        state: "None",
-                        country: "None",
-                    },
-                    role: "user",
-                    profileImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgJ0xLgjNQgjMLPh2FaBZ-s7wjHOJZNBJxYw&s`",
-                }),
-            });
+  const [error, setError] = useState(null); // Для отображения ошибок
+  const navigate = useNavigate();
 
-            if (response.ok) {
-                const result = await response.json();
-                toast.success("Registration successful! Redirecting...");
-                setTimeout(() => navigate('/'), 2000);
-                console.log(result);
-            } else {
-                const error = await response.json();
-                toast.error(error.message || "Registration failed! Please try again.");
-            }
-        } catch (err) {
-            toast.error("An error occurred. Please try again.");
-        } finally {
-            // Reset form inputs
-            setAge("");
-            setEmail("");
-            setFirstName("");
-            setLastName("");
-            setPassword("");
-            setphone("");
-        }
-    };
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    return (
-        <div className="flex h-screen bg-white">
-            <div className="w-4/6 flex flex-col items-center justify-center bg-orange-500">
-                <img src="./bg.png" alt="Background" />
-            </div>
-            <div className="flex gap-10 flex-col justify-center px-5 flex-1">
-                <div>
-                    <h1 className="text-4xl mb-2 font-bold text-secondary">Welcome to Register!</h1>
-                    <p className="text-secondary text-opacity-55">Chat</p>
-                </div>
-                <form onSubmit={requestRegister} className="flex flex-col gap-5">
-                    <div className="flex gap-2 items-center">
-                        <label className="input input-bordered flex items-center gap-2">
-                            <input
-                                type="text"
-                                className="grow"
-                                placeholder="First Name"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                required
-                            />
-                        </label>
-                        <label className="input input-bordered flex items-center gap-2">
-                            <input
-                                type="text"
-                                className="grow"
-                                placeholder="Last Name"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                required
-                            />
-                        </label>
-                    </div>
-                    <label className="input input-bordered flex items-center gap-2">
-                        <input
-                            type="email"
-                            className="grow"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </label>
-                    <label className="input input-bordered flex items-center gap-2">
-                        <input
-                            type="text"
-                            className="grow"
-                            placeholder="Phone Number"
-                            value={phone}
-                            onChange={(e) => setphone(e.target.value)}
-                        />
-                    </label>
-                    <label className="input input-bordered flex items-center gap-2">
-                        <input
-                            type="number"
-                            className="grow"
-                            placeholder="Age"
-                            value={age}
-                            onChange={(e) => setAge(e.target.value)}
-                        />
-                    </label>
-                    <label className="input input-bordered flex items-center gap-2">
-                        <input
-                            type="password"
-                            className="grow"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </label>
-                    <button
-                        type="submit"
-                        className="btn btn-secondary text-white font-semibold uppercase">
-                        Register
-                    </button>
-                </form>
-            </div>
-        </div>
-    );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null); // Сброс ошибки перед отправкой
+    try {
+      const response = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        navigate("/login");
+      } else {
+        const { error } = await response.json();
+        setError(error);
+      }
+    } catch (err) {
+      setError("Ошибка при регистрации: " + err.message);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex">
+      {/* Левая часть с фоном (картинка) */}
+      <div
+        className="w-1/1 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('https://via.placeholder.com/800x1200')",
+        }}
+      >
+        {/* Замените URL картинки на ваше собственное изображение */}
+      </div>
+
+      {/* Правая часть с формой */}
+      <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
+        <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg"
+        >
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Username"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Password"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="text"
+            name="profilePic"
+            value={formData.profilePic}
+            onChange={handleChange}
+            placeholder="Profile Picture URL"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Description"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Phone"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="date"
+            name="birthDate"
+            value={formData.birthDate}
+            onChange={handleChange}
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <button
+            type="submit"
+            className="btn btn-primary w-full p-3 mt-4 rounded-lg"
+          >
+            Зарегистрироваться
+          </button>
+        </form>
+        <p className="text-center mt-4">
+          Уже есть аккаунт?{" "}
+          <Link to="/login" className="text-blue-500">
+            Войти
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 };
 
 export default Register;
