@@ -1,70 +1,138 @@
-import { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-export default function Header() {
-  const [showRegister, setShowRegister] = useState(false);
+const Register = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    profilePic: "",
+    description: "",
+    phone: "",
+    birthDate: "",
+  });
+
+  const [error, setError] = useState(null); // Для отображения ошибок
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null); // Сброс ошибки перед отправкой
+    try {
+      const response = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        navigate("/login");
+      } else {
+        const { error } = await response.json();
+        setError(error);
+      }
+    } catch (err) {
+      setError("Ошибка при регистрации: " + err.message);
+    }
+  };
 
   return (
-    <div className="flex justify-between items-center px-4 py-2 bg-[#0f1117]">
-      {/* Левая часть */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Type here"
-          className="px-3 py-1 rounded border border-purple-500 outline-none bg-gray-800 text-white"
-        />
-        <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded">
-          submit
-        </button>
+    <div className="min-h-screen flex">
+      {/* Левая часть с фоном (картинка) */}
+      <div
+        className="w-1/1 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('https://via.placeholder.com/800x1200')",
+        }}
+      >
+        {/* Замените URL картинки на ваше собственное изображение */}
       </div>
 
-      {/* Правая часть */}
-      <div className="flex gap-4 items-center">
-        <button
-          onClick={() => setShowRegister(true)}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-1 rounded"
+      {/* Правая часть с формой */}
+      <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
+        <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg"
         >
-          Register
-        </button>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Username"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Password"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="text"
+            name="profilePic"
+            value={formData.profilePic}
+            onChange={handleChange}
+            placeholder="Profile Picture URL"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="text"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Description"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Phone"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="date"
+            name="birthDate"
+            value={formData.birthDate}
+            onChange={handleChange}
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <button
+            type="submit"
+            className="btn btn-primary w-full p-3 mt-4 rounded-lg"
+          >
+            Зарегистрироваться
+          </button>
+        </form>
+        <p className="text-center mt-4">
+          Уже есть аккаунт?{" "}
+          <Link to="/login" className="text-blue-500">
+            Войти
+          </Link>
+        </p>
       </div>
-
-      {/* Модалка */}
-      {showRegister && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-md shadow-lg w-full max-w-sm">
-            <h2 className="text-xl font-bold mb-4 text-black">Регистрация</h2>
-
-            <input
-              type="text"
-              placeholder="Username"
-              className="w-full mb-3 px-3 py-2 border rounded text-black"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full mb-3 px-3 py-2 border rounded text-black"
-            />
-
-            <div className="flex justify-between">
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                onClick={() => {
-                  // TODO: тут будет твоя логика регистрации
-                  console.log('Регистрация отправлена!');
-                  setShowRegister(false);
-                }}
-              >
-                Зарегистрироваться
-              </button>
-              <button
-                className="text-gray-600 hover:text-black"
-                onClick={() => setShowRegister(false)}
-              >
-                Закрыть
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default Register;

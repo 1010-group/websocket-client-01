@@ -1,44 +1,46 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+""; // src/main.jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
 
-
-import { Provider } from 'react-redux'
-import { store, persistor } from './redux/store.js'
-import { PersistGate } from 'redux-persist/integration/react'
+import { Provider } from "react-redux";
+import { store, persistor } from "./redux/store";
+import { PersistGate } from "redux-persist/integration/react";
 import {
   createBrowserRouter,
   RouterProvider,
+  Navigate,
 } from "react-router-dom";
-import Register from './pages/Register.jsx'
-import Login from './pages/Login.jsx'
-
+import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Navigate to="/login" />, // Редирект на /login при запуске
   },
   {
-    path:"/register",
-    element: <Register /> 
+    path: "/register",
+    element: <Register />,
   },
   {
     path: "/login",
-    element: <Login />
-  }
+    element: <Login />,
+  },
+  {
+    path: "/home",
+    element: <App />,
+  },
 ]);
 
+const root = ReactDOM.createRoot(document.getElementById("root"));
 
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <RouterProvider router={router} />
-      </PersistGate>
-    </Provider>
-  </StrictMode>,
-
-)
+root.render(
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <RouterProvider router={router} />
+    </PersistGate>
+  </Provider>
+);
+("");
