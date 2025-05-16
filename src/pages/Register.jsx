@@ -6,13 +6,14 @@ const Register = () => {
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
     profilePic: "",
     description: "",
     phone: "",
     birthDate: "",
   });
 
-  const [error, setError] = useState(null); // Для отображения ошибок
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -21,7 +22,13 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Сброс ошибки перед отправкой
+    setError(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Пароли не совпадают");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
@@ -31,11 +38,20 @@ const Register = () => {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         navigate("/login");
       } else {
-        const { error } = await response.json();
-        setError(error);
+        // Показываем подробное сообщение, если оно есть
+        const message =
+          typeof data.error === "string"
+            ? data.error
+            : data.message ||
+              (data.errors
+                ? Object.values(data.errors).join(", ")
+                : "Произошла ошибка");
+        setError(message);
       }
     } catch (err) {
       setError("Ошибка при регистрации: " + err.message);
@@ -44,20 +60,22 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Левая часть с фоном (картинка) */}
+      {/* Левая часть с фоном */}
       <div
-        className="w-1/1 bg-cover bg-center"
+        className="w-1/2 bg-cover bg-center"
         style={{
           backgroundImage: "url('https://via.placeholder.com/800x1200')",
         }}
-      >
-        {/* Замените URL картинки на ваше собственное изображение */}
-      </div>
+      />
 
       {/* Правая часть с формой */}
       <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
         <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+        {error && typeof error === "string" && (
+          <p className="text-red-500 text-center mb-4">{error}</p>
+        )}
+
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg"
@@ -84,6 +102,14 @@ const Register = () => {
             value={formData.password}
             onChange={handleChange}
             placeholder="Password"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Confirm Password"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
@@ -124,6 +150,7 @@ const Register = () => {
             Зарегистрироваться
           </button>
         </form>
+
         <p className="text-center mt-4">
           Уже есть аккаунт?{" "}
           <Link to="/login" className="text-blue-500">

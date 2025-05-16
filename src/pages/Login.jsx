@@ -5,17 +5,16 @@ import socket from "../socket";
 import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // Для отображения ошибок
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Проверка на пустые поля
-    if (!email || !password) {
+    if (!phone || !password) {
       setError("Заполните все поля.");
       return;
     }
@@ -26,17 +25,17 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ phone, password }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         dispatch(loginSuccess({ user: data.user }));
         socket.emit("user_connected", data.user);
-        navigate("/home"); // Переход на главную страницу после входа
+        navigate("/home");
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Ошибка при входе");
+        setError(data.message || "Ошибка при входе");
       }
     } catch (error) {
       setError("Ошибка при подключении к серверу.");
@@ -46,17 +45,13 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Левая часть с фоном (картинка) */}
       <div
         className="w-1/1 bg-cover bg-center"
         style={{
           backgroundImage: "url('https://via.placeholder.com/800x1200')",
         }}
-      >
-        {/* Можно заменить URL картинки на свою */}
-      </div>
+      ></div>
 
-      {/* Правая часть с формой */}
       <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
         <h1 className="text-4xl font-semibold mb-4">Добро пожаловать!</h1>
         <p className="text-lg mb-8">Войдите в вашу учетную запись.</p>
@@ -65,10 +60,10 @@ const Login = () => {
           className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg"
         >
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Телефон"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
