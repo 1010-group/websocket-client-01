@@ -14,11 +14,13 @@ import {
 } from "react-router-dom";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
-
+import PrivateRouter from "./guard/PrivateRouter.jsx"
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/login" />, // Редирект на /login при запуске
+    element: <PrivateRouter>
+      <App />
+    </PrivateRouter> // Редирект на /login при запуске
   },
   {
     path: "/register",

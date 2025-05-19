@@ -1,66 +1,48 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import socket from "./socket";
+import React, { useEffect, useState } from 'react'
+import socket from './socket'
+import { useSelector } from 'react-redux'
 
-function App() {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const user = useSelector((state) => state.auth.user);
 
-  const sendMessage = (e) => {
-    e.preventDefault();
-    if (message.trim()) {
-      const data = {
-        message,
-        username: user?.username || "Гость",
-        avatar: user?.profilePic || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnFRPx77U9mERU_T1zyHcz9BOxbDQrL4Dvtg&s", // Используем аватар из профиля
-      };
-      socket.emit("send_message", data);
-      setMessage("");
-    }
-  };
+const App = () => {
+  const user = useSelector(state => state.auth.user)
+  const [onlineUsers, setOnlineUsers] = useState([])
 
   useEffect(() => {
-    socket.on("message", (data) => {
-      setMessages((prev) => [...prev, data]);
-    });
+    if (user) {
+      socket.emit("user_joined", user)
+    }
 
-    return () => {
-      socket.off("message");
-    };
-  }, []);
+    socket.on("user_joined", (data) => {
+      console.log("asd: ", data);
+    })
+
+    socket.on("online_users", (data) => {
+      setOnlineUsers(data)
+      console.log("online_users: ", data);
+    })
+  })
+
 
   return (
-    <div className="flex flex-col items-center p-4">
-      <div className="w-full max-w-md p-2 border rounded-lg mb-4">
-        {messages.map((msg, index) => (
-          <div key={index} className="flex items-center gap-2 p-2 border-b last:border-none">
-            <img
-              src={msg.avatar}
-              alt="avatar"
-              className="w-10 h-10 rounded-full"
-            />
-            <div>
-              <strong>{msg.username}:</strong> {msg.message}
+    <div className="flex h-screen">
+      <div className='w-3/12 h-full bg-base-300 overflow-y-auto'>
+        {
+          onlineUsers.map((item, id) => (
+            <div key={id} className='flex gap-6 items-center p-2 bg-base-200'>
+              <div>
+                <img className='size-14 rounded-full' src={item.profilePic || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"} alt="" />
+              </div>
+              <div>
+                <p>{item.username}</p>
+                <p className='text-success'>Online</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        }
       </div>
-
-      <form onSubmit={sendMessage} className="flex gap-2">
-        <input
-          className="input input-primary flex-grow"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          type="text"
-          placeholder="Напиши сообщение..."
-        />
-        <button className="btn btn-primary" type="submit">
-          Отправить
-        </button>
-      </form>
+      <div className='w-9/12 h-full bg-base-100'></div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
