@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import socket from './socket'
 import { useSelector } from 'react-redux'
 
-
 const App = () => {
   const user = useSelector(state => state.auth.user)
   const [onlineUsers, setOnlineUsers] = useState([])
@@ -12,16 +11,24 @@ const App = () => {
       socket.emit("user_joined", user)
     }
 
-    socket.on("user_joined", (data) => {
+    const handleUserJoined = (data) => {
       console.log("asd: ", data);
-    })
+    }
 
-    socket.on("online_users", (data) => {
+    const handleOnlineUsers = (data) => {
       setOnlineUsers(data)
       console.log("online_users: ", data);
-    })
-  })
+    }
 
+    socket.on("user_joined", handleUserJoined)
+    socket.on("online_users", handleOnlineUsers)
+
+    // 🔥 MUHIM: Cleanup qilish
+    return () => {
+      socket.off("user_joined", handleUserJoined)
+      socket.off("online_users", handleOnlineUsers)
+    }
+  }, [user]) // ❗ Faqat user o‘zgarsa ishga tushsin
 
   return (
     <div className="flex h-screen">
