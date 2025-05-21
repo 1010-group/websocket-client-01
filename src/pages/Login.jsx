@@ -22,7 +22,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("https://websocket-server-01.onrender.com", {
+      const response = await fetch("https://websocket-server-01.onrender.com/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
