@@ -12,6 +12,7 @@ const App = () => {
     socket.emit("user_joined", user);
 
     const handleOnlineUsers = (users) => {
+      console.log("Online users:", users);
       setOnlineUsers(users);
     };
 
@@ -25,6 +26,7 @@ const App = () => {
     return () => {
       socket.emit("user_left", user._id);
       socket.off("online_users", handleOnlineUsers);
+      socket.emit("disconnect", user)
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [user]);
