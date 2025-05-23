@@ -15,12 +15,19 @@ import {
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import PrivateRouter from "./guard/PrivateRouter.jsx"
+import Chat from "./pages/Chat.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
     element: <PrivateRouter>
       <App />
-    </PrivateRouter> // Редирект на /login при запуске
+    </PrivateRouter>, // Редирект на /login при запуске
+    children: [
+      {
+        path: "/chat/:id", // Редирект на /login при запуске/"
+        element: <Chat />
+      }
+    ]
   },
   {
     path: "/register",
@@ -29,10 +36,6 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
-  },
-  {
-    path: "/home",
-    element: <App />,
   },
 ]);
 

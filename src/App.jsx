@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import socket from "./socket";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { setSelectedUser } from "./redux/slices/selectedUser";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [loading, setLoading] = useState(true); // ✅ loading state
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -34,6 +39,12 @@ const App = () => {
     };
   }, [user]);
 
+  const handleOpenChat = (malumot) => {
+    console.log("malumot: ", malumot)
+    dispatch(setSelectedUser(malumot))
+    navigate("/chat/" + user._id)
+  }
+
   return (
     <div className="flex h-screen">
       <div className="w-3/12 bg-base-300 overflow-y-auto p-2">
@@ -50,6 +61,7 @@ const App = () => {
             <div
               key={u._id}
               className="flex items-center gap-3 p-2 mb-2 bg-base-200 rounded"
+              onClick={() => handleOpenChat(u)}
             >
               <img
                 className="w-12 h-12 rounded-full"
@@ -71,7 +83,13 @@ const App = () => {
       </div>
 
       <div className="w-9/12 bg-base-100 flex justify-center items-center">
-        <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>
+        {
+          id ? (
+            <Outlet />
+          ) : (
+            <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>
+          )
+        }
       </div>
     </div>
   );
