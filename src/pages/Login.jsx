@@ -35,7 +35,7 @@ const Login = () => {
       if (response.ok) {
         dispatch(loginSuccess({ user: data.user }));
         socket.emit("user_connected", data.user);
-        navigate("/home");
+        navigate("/");
       } else {
         setError(data.message || "Ошибка при входе");
       }
