@@ -1,49 +1,107 @@
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { IoMdSend } from "react-icons/io";
-import socket from '../socket';
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import socket from "../socket";
 
 const Chat = () => {
-    const selectedChat = useSelector(state => state.selectChat.selectedUser)
-    const [inputValue, setInputValue] = useState(null)
+    const currentUser = useSelector((state) => state.auth.user);
+    const selectedUser = useSelector((state) => state.selectChat.selectedUser);
 
+    const [message, setMessage] = useState("");
+    const [chatMessages, setChatMessages] = useState([]);
+    const [typingUser, setTypingUser] = useState(null);
 
     useEffect(() => {
-        console.log("CHAT: ", selectedChat)
-    }, [selectedChat])
+        if (!currentUser) return;
+        socket.emit("user_joined", currentUser);
+    }, [currentUser]);
+
+    useEffect(() => {
+        socket.on("receive_message", (data) => {
+            setChatMessages((prev) => [...prev, data]);
+        });
+
+        socket.on("typed", (data) => {
+            console.log("✍️ Typing event from:", data.from.username);
+            setTypingUser(data.from.username);
+
+            // 2 sekunddan keyin "typing..." ni o'chiramiz
+            setTimeout(() => {
+                setTypingUser(null);
+            }, 2000);
+        });
+
+        return () => {
+            socket.off("receive_message");
+            socket.off("typed");
+        };
+    }, []);
 
     const handleSendMessage = () => {
-        console.log(inputValue)
-        socket.emit("send_message", { message: inputValue, receiverId: selectedChat._id, from: selectedChat })
-    }
+        if (!message.trim()) return;
 
+        const msgData = {
+            from: currentUser,
+            to: selectedUser,
+            text: message,
+            timestamp: new Date(),
+        };
 
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            handleSendMessage()
-        }
-    }
+        socket.emit("send_message", msgData);
+        setChatMessages((prev) => [...prev, msgData]);
+        setMessage("");
+    };
+
+    const handleTyping = () => {
+        if (!selectedUser) return;
+        socket.emit("typing", {
+            from: currentUser,
+            to: selectedUser,
+        });
+    };
 
     return (
-        <div className='flex-1 h-screen flex flex-col'>
-            <div className='h-[12%] bg-base-300 flex items-center p-2'>
-                <div>
-                    <p className='text-2xl font-semibold'>{selectedChat?.username}</p>
-                    <p className={`text-sm ${selectedChat?.status ? "text-success" : "text-error"}`}>{selectedChat?.status ? "Online" : "Offline"}</p>
-                </div>
-                <div></div>
+        <div className="flex flex-col h-screen bg-base-100 flex-1">
+            <div className={`bg-base-300 h-[10%] p-4 shadow mb-2 `}>
+                <h2 className="text-lg font-bold">{selectedUser?.username}</h2>
+                <p className={`${selectedUser?.status ? "text-success" : "text-error"}`}>
+                    {typingUser && typingUser === selectedUser?.username ? "Typing..." : "" || selectedUser?.status ? "Online" : "Offline"}
+                </p>
             </div>
-            <div className='flex-1 bg-base-100 overflow-y-auto flex flex-col'>
 
+            <div className="flex-1 bg-base-100 rounded-md shadow p-4 overflow-y-auto">
+                {chatMessages.map((msg, index) => (
+                    <div
+                        key={index}
+                        className={`mb-2 ${msg.from._id === currentUser._id
+                            ? "text-right text-blue-600"
+                            : "text-left text-green-600"
+                            }`}
+                    >
+                        <p className="text-sm">{msg.text}</p>
+                    </div>
+                ))}
             </div>
-            <div className='h-1/12 bg-base-300 flex items-center'>
-                <input type="text" placeholder='Type a message' value={inputValue} onChange={(e) => setInputValue(e.target.value)} className='input input-bordered w-full rounded-e-none' onKeyDown={handleKeyDown} />
-                <button className='btn btn-primary rounded-l-none' onClick={() => handleSendMessage()}>
-                    <IoMdSend />
+
+            <div className="mt-2 flex gap-2 bg-base-300 p-3 rounded-md h-1/12">
+                <input
+                    type="text"
+                    placeholder="Xabar yozing..."
+                    className="flex-1 p-2 border rounded"
+                    value={message}
+                    onChange={(e) => {
+                        setMessage(e.target.value);
+                        handleTyping();
+                    }}
+                />
+                <button
+                    onClick={handleSendMessage}
+                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                    Yuborish
                 </button>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Chat
+export default Chat;
