@@ -16,18 +16,25 @@ import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import PrivateRouter from "./guard/PrivateRouter.jsx"
 import Chat from "./pages/Chat.jsx";
+import Favorites from "./pages/Favorites.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <PrivateRouter>
-      <App />
-    </PrivateRouter>, // Редирект на /login при запуске
+    element: (
+      <PrivateRouter>
+        <App />
+      </PrivateRouter>
+    ),
     children: [
       {
-        path: "/chat/:id", // Редирект на /login при запуске/"
-        element: <Chat />
-      }
-    ]
+        path: "chat/:id",
+        element: <Chat />,
+      },
+      {
+        path: "favorites",
+        element: <Favorites />,
+      },
+    ],
   },
   {
     path: "/register",

@@ -3,25 +3,30 @@ import socket from "./socket";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { setSelectedUser } from "./redux/slices/selectedUser";
+import { useLocation } from "react-router-dom";
+
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const [loading, setLoading] = useState(true);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith("/chat/");
+  const isFavoritesPage = location.pathname === "/favorites";
+  const isInsidePage = location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
+  const [chatMessages, setChatMessages] = useState([]);
 
   useEffect(() => {
     if (!user || !user._id) return;
 
-    // Foydalanuvchi socket orqali tizimga qo‘shildi
     socket.emit("user_joined", user);
 
-    // Serverdan online foydalanuvchilarni olish
     const handleOnlineUsers = (users) => {
       setOnlineUsers(users);
-      setLoading(false); // ✅ Ma'lumot kelgach loading tugaydi
+      setLoading(false);
     };
 
     socket.on("online_users", handleOnlineUsers);
@@ -40,10 +45,23 @@ const App = () => {
   }, [user]);
 
   const handleOpenChat = (malumot) => {
-    console.log("malumot: ", malumot)
-    dispatch(setSelectedUser(malumot))
-    navigate("/chat/" + user._id)
-  }
+    if (malumot._id === user._id) {
+      navigate("/favorites");
+    } else {
+      dispatch(setSelectedUser(malumot));
+      navigate("/chat/" + malumot._id);
+    }
+  };
+
+  const handleOnlineUsers = (users) => {
+    const filtered = users.filter((u) => u._id !== user._id);
+    setOnlineUsers(filtered);
+    setLoading(false);
+  };
+
+
+
+  const sortedUsers = [...onlineUsers].sort((a, b) => b.status - a.status);
 
   return (
     <div className="flex h-screen">
@@ -54,13 +72,13 @@ const App = () => {
           <div className="flex justify-center">
             <span className="loading loading-spinner text-primary"></span>
           </div>
-        ) : onlineUsers.length === 0 ? (
+        ) : sortedUsers.length === 0 ? (
           <p className="text-gray-400">Hozircha foydalanuvchilar yo‘q</p>
         ) : (
-          onlineUsers.map((u) => (
+          sortedUsers.map((u) => (
             <div
               key={u._id}
-              className="flex items-center gap-3 p-2 mb-2 bg-base-200 rounded"
+              className="flex items-center gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition"
               onClick={() => handleOpenChat(u)}
             >
               <img
@@ -83,14 +101,14 @@ const App = () => {
       </div>
 
       <div className="w-9/12 bg-base-100 flex justify-center items-center">
-        {
-          id ? (
-            <Outlet />
-          ) : (
-            <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>
-          )
-        }
+        {isInsidePage ? (
+          <Outlet />
+        ) : (
+          <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>
+        )}
       </div>
+
+
     </div>
   );
 };
