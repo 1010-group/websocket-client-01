@@ -85,6 +85,22 @@ const Chat = () => {
     });
   };
 
+  const handleDeleteMessage = (messageId) => {
+    socket.emit("delete_message", { messageId });
+  };
+
+  useEffect(() => {
+    const handleDeleted = (deletedId) => {
+      setChatMessages((prev) => prev.filter((msg) => msg._id !== deletedId));
+    };
+
+    socket.on("message_deleted", handleDeleted);
+
+    return () => {
+      socket.off("message_deleted", handleDeleted);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col h-screen bg-base-100 flex-1">
       <div className="bg-base-300 h-[10%] p-4 shadow mb-2">
@@ -109,19 +125,26 @@ const Chat = () => {
         {chatMessages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 ${msg.from === currentUser._id ? "text-right" : "text-left"
-              }`}
+            className={`mb-2 ${msg.from === currentUser._id ? "text-right" : "text-left"}`}
           >
             <span
-              className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words ${msg.from === currentUser._id
-                ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
-                : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
-                }`}
+              className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words ${
+                msg.from === currentUser._id
+                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                  : "bg-gradient-to-r from-blue-700 to-cyan-400 text-white"
+              }`}
             >
               {msg.text}
             </span>
+            {msg.from === currentUser._id && (
+              <button
+                onClick={() => handleDeleteMessage(msg._id)}
+                className="ml-2 text-xs text-red-500 hover:underline"
+              >
+                Delete
+              </button>
+            )}
           </div>
-
         ))}
       </div>
 
