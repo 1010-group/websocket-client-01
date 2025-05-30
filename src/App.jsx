@@ -19,6 +19,7 @@ const App = () => {
   const isFavoritesPage = location.pathname === "/favorites";
   const isInsidePage = location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
   const [chatMessages, setChatMessages] = useState([]);
+  console.log("USER:", user)
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -109,7 +110,7 @@ const App = () => {
         )}
       </div>
 
-      <div className="fixed bottom-10 right-10 z-[999]">
+      <div className="fixed bottom-16 right-2 z-[999]">
         <div className="drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content">
