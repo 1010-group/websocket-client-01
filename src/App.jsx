@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import socket from "./socket";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
 import { setSelectedUser } from "./redux/slices/selectedUser";
-import { useLocation } from "react-router-dom";
 import { MdMenu } from "react-icons/md";
 
 const App = () => {
@@ -15,19 +14,10 @@ const App = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
-  const isInsidePage = location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
-  const response = async () => {
-    try {
-      const res = await fetch("https://websocket-server-01.onrender.com/api/users");
-      if (!res.ok) throw new Error("Failed to fetch online users");
-      const data = await res.json();
-      setOnlineUsers(data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching online users:", error);
-      setLoading(false);
-    }
-  }
+
+  const isInsidePage =
+    location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
+
   useEffect(() => {
     if (!user || !user._id) return;
 
@@ -43,13 +33,7 @@ const App = () => {
     });
 
     const handleOnlineUsers = (users) => {
-      // Сортируем, чтобы текущий пользователь был вверху
-      const sortedUsers = [...users].sort((a, b) => {
-        if (a._id === user._id) return -1;
-        if (b._id === user._id) return 1;
-        return b.status - a.status; // по статусу онлайн вверху
-      });
-      setOnlineUsers(sortedUsers);
+      setOnlineUsers(users.filter((u) => u._id !== user._id));
       setLoading(false);
     };
 
@@ -76,9 +60,12 @@ const App = () => {
       navigate("/chat/" + malumot._id);
     }
   };
-  console.log(onlineUsers)
+
+  const sortedUsers = [...onlineUsers].sort((a, b) => b.status - a.status);
+
   return (
     <div className="flex h-screen">
+      {/* Left Sidebar - Online Users */}
       <div className="w-3/12 bg-base-300 overflow-y-auto p-2">
         <h2 className="text-xl font-bold mb-4">Online Users</h2>
 
@@ -114,10 +101,12 @@ const App = () => {
         )}
       </div>
 
+      {/* Main Chat Area */}
       <div className="w-9/12 bg-base-100 flex justify-center items-center">
         {isInsidePage ? <Outlet /> : <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>}
       </div>
 
+      {/* Drawer: My Profile */}
       <div className="fixed bottom-10 right-10 z-[999]">
         <div className="drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
@@ -128,30 +117,45 @@ const App = () => {
           </div>
           <div className="drawer-side">
             <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-            <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
-              {/* Текущий пользователь */}
-              {user && (
-                <div className="flex gap-3 p-2 mb-4 bg-base-200 rounded flex-col">
-                  <img
-                    className="w-20 h-20 rounded-full gap-10"
-                    src={
-                      user.image ||
-                      "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
-                    }
-                    alt={user.username}
-                  />
-                  <div>
-                    <p className="text-green-500">Online</p>
-                    <p className="font-semibold">{user.username}</p>
-                    <p>{user.nickname}</p>
-                    <p>{user.phone}</p>
-                    <p>{new Date(user.birthDate).toLocaleDateString()}</p>
-                    <p>{user.description}</p>
+            <div className="bg-base-200 text-base-content min-h-full w-80 p-4 space-y-4">
+              <h2 className="text-lg font-semibold">Мой профиль</h2>
 
-                  </div>
+              <div className="flex items-center space-x-4">
+                <img
+                  src={user?.profilePic || "https://via.placeholder.com/64"}
+                  alt="Avatar"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <div>
+                  <p className="text-xl font-light">{user?.fullname || "."}</p>
+                  <p className="text-sm text-green-500">в сети</p>
                 </div>
-              )}
-            </ul>
+              </div>
+
+              <div className="flex items-center space-x-3 border-t pt-3">
+                <span className="text-gray-500">📞</span>
+                <div>
+                  <p className="text-md">{user?.phone || "+998 97 000 00 00"}</p>
+                  <p className="text-sm text-gray-500">Телефон</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <span className="text-blue-500">@</span>
+                <div>
+                  <p className="text-md">{user?.username || "@username"}</p>
+                  <p className="text-sm text-gray-500">Имя пользователя</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 border-t pt-3">
+                <span className="text-gray-500">🕓</span>
+                <div>
+                  <p className="text-md">Архив историй</p>
+                  <p className="text-sm text-gray-500">7</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../socket";
+import moment from "moment";
+import "moment/locale/ru";
+moment.locale("ru");
 
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
@@ -10,8 +13,6 @@ const Chat = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
 
-
-  // 🔄 Загружаем историю сообщений
   useEffect(() => {
     if (!selectedUser || !currentUser) return;
 
@@ -22,7 +23,6 @@ const Chat = () => {
     });
   }, [selectedUser]);
 
-  // 👤 Регистрируем пользователя
   useEffect(() => {
     if (currentUser) {
       socket.emit("user_joined", currentUser);
@@ -31,7 +31,6 @@ const Chat = () => {
 
   useEffect(() => {
     const receiveMessage = (data) => {
-      // Только если сообщение между текущим и выбранным пользователем
       if (
         (data.from === currentUser._id && data.to === selectedUser?._id) ||
         (data.from === selectedUser?._id && data.to === currentUser._id)
@@ -86,26 +85,10 @@ const Chat = () => {
     });
   };
 
-  const handleDeleteMessage = (messageId) => {
-    socket.emit("delete_message", { messageId });
-  };
-
-  useEffect(() => {
-    const handleDeleted = (deletedId) => {
-      setChatMessages((prev) => prev.filter((msg) => msg._id !== deletedId));
-    };
-
-    socket.on("message_deleted", handleDeleted);
-
-    return () => {
-      socket.off("message_deleted", handleDeleted);
-    };
-  }, []);
-
   return (
     <div className="flex flex-col h-screen bg-base-100 flex-1">
       <div className="bg-base-300 h-[10%] p-4 shadow mb-2">
-        <h2 className="text-lg font-bold">{selectedUser?.username}</h2>
+        <h2 className="text-lg font-bold">{selectedUser?.username || "Пользователь не выбран"}</h2>
         <p className={selectedUser?.status ? "text-success" : "text-error"}>
           {typingUser ? (
             <span className="flex items-center gap-1">
@@ -126,25 +109,40 @@ const Chat = () => {
         {chatMessages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 ${msg.from === currentUser._id ? "text-right" : "text-left"}`}
-          >
-            <span
-              className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words ${
-                msg.from === currentUser._id
-                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                  : "bg-gradient-to-r from-blue-700 to-cyan-400 text-white"
+            className={`mb-2 ${msg.from === currentUser._id
+              ? "flex items-center gap-4 justify-start flex-row-reverse"
+              : "flex items-center gap-4 justify-start"
               }`}
-            >
-              {msg.text}
-            </span>
-            {msg.from === currentUser._id && (
-              <button
-                onClick={() => handleDeleteMessage(msg._id)}
-                className="ml-2 text-xs text-red-500 hover:underline"
+          >
+            <figure>
+              <img
+                className="size-14 rounded-full"
+                src={
+                  msg.from === currentUser._id
+                    ? currentUser.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                    : selectedUser?.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                }
+                alt=""
+              />
+            </figure>
+            <div>
+              {msg.from === currentUser._id ? (
+                <p className="text-end px-1 text-primary font-bold">Me</p>
+              ) : (
+                <p className="font-bold">{selectedUser?.username}</p>
+              )}
+              <span
+                className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words min-w-[220px] ${msg.from === currentUser._id
+                  ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
+                  : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
+                  }`}
               >
-                Delete
-              </button>
-            )}
+                {msg.text}
+              </span>
+              <div className={`text-xs ${msg.from === currentUser._id ? "flex items-center gap-4 justify-end" : "flex items-center gap-4 justify-start"}`}>
+                <span className="text-balance text-base-content/35">{moment(msg.timestamp).calendar()}</span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
