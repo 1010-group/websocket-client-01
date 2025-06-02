@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 const Register = () => {
   const [formData, setFormData] = useState({
     username: "",    // @username (id)
-    nickname: "",    // Display name
+    fullName: "",    // Display name
     phone: "",
     password: "",
     confirmPassword: "",
@@ -50,9 +50,9 @@ const Register = () => {
           typeof data.error === "string"
             ? data.error
             : data.message ||
-            (data.errors
-              ? Object.values(data.errors).join(", ")
-              : "Произошла ошибка");
+              (data.errors
+                ? Object.values(data.errors).join(", ")
+                : "Произошла ошибка");
         setError(message);
       }
     } catch (err) {
@@ -89,10 +89,10 @@ const Register = () => {
           />
           <input
             type="text"
-            name="nickname"
-            value={formData.nickname}
+            name="fullName"
+            value={formData.fullName}
             onChange={handleChange}
-            placeholder="Nickname"
+            placeholder="Full Name"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../socket";
-
+import moment from "moment"; // ✅ ВАЖНО: импорт moment
+import { IoSendSharp } from "react-icons/io5";
 
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
@@ -13,8 +14,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (!selectedUser || !currentUser) return;
-
-    setChatMessages([]); // очищаем чат
+    setChatMessages([]);
     socket.emit("get_history", {
       from: currentUser._id,
       to: selectedUser._id,
@@ -130,7 +130,7 @@ const Chat = () => {
                 <p className="font-bold">{selectedUser?.username}</p>
               )}
               <span
-                className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words min-w-[220px] ${msg.from === currentUser._id
+                className={`inline-block px-3 py-1 rounded-2xl max-w-[570px] break-words min-w-[220px] ${msg.from === currentUser._id
                   ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
                   : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
                   }`}
@@ -163,7 +163,7 @@ const Chat = () => {
           onClick={handleSendMessage}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
-          Yuborish
+          <IoSendSharp />
         </button>
       </div>
     </div>
