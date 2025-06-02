@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import socket from "./socket";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
 import { setSelectedUser } from "./redux/slices/selectedUser";
-import { useLocation } from "react-router-dom";
 import { MdMenu } from "react-icons/md";
-
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -15,11 +13,17 @@ const App = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+<<<<<<< HEAD
   const isChatPage = location.pathname.startsWith("/chat/");
   const isFavoritesPage = location.pathname === "/favorites";
   const isInsidePage = location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
   const [chatMessages, setChatMessages] = useState([]);
   console.log("USER:", user)
+=======
+
+  const isInsidePage =
+    location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
+>>>>>>> 759904fe31ac64b6a3a258d71cba8506bae8ddc6
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -27,7 +31,7 @@ const App = () => {
     socket.emit("user_joined", user);
 
     const handleOnlineUsers = (users) => {
-      setOnlineUsers(users);
+      setOnlineUsers(users.filter((u) => u._id !== user._id));
       setLoading(false);
     };
 
@@ -55,18 +59,11 @@ const App = () => {
     }
   };
 
-  const handleOnlineUsers = (users) => {
-    const filtered = users.filter((u) => u._id !== user._id);
-    setOnlineUsers(filtered);
-    setLoading(false);
-  };
-
-
-
   const sortedUsers = [...onlineUsers].sort((a, b) => b.status - a.status);
 
   return (
     <div className="flex h-screen">
+      {/* Left Sidebar - Online Users */}
       <div className="w-3/12 bg-base-300 overflow-y-auto p-2">
         <h2 className="text-xl font-bold mb-4">Online Users</h2>
 
@@ -102,6 +99,7 @@ const App = () => {
         )}
       </div>
 
+      {/* Main Chat Area */}
       <div className="w-9/12 bg-base-100 flex justify-center items-center">
         {isInsidePage ? (
           <Outlet />
@@ -110,24 +108,63 @@ const App = () => {
         )}
       </div>
 
+<<<<<<< HEAD
       <div className="fixed bottom-16 right-2 z-[999]">
+=======
+      {/* Drawer: My Profile */}
+      <div className="fixed bottom-10 right-10 z-[999]">
+>>>>>>> 759904fe31ac64b6a3a258d71cba8506bae8ddc6
         <div className="drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content">
-            {/* Page content here */}
-            <label htmlFor="my-drawer" className="btn btn-primary drawer-button"><MdMenu /></label>
+            <label htmlFor="my-drawer" className="btn btn-primary drawer-button">
+              <MdMenu />
+            </label>
           </div>
           <div className="drawer-side">
             <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-            <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
-              {/* Sidebar content here */}
-              <li><a>Sidebar Item 1</a></li>
-              <li><a>Sidebar Item 2</a></li>
-            </ul>
+            <div className="bg-base-200 text-base-content min-h-full w-80 p-4 space-y-4">
+              <h2 className="text-lg font-semibold">Мой профиль</h2>
+
+              <div className="flex items-center space-x-4">
+                <img
+                  src={user?.profilePic || "https://via.placeholder.com/64"}
+                  alt="Avatar"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <div>
+                  <p className="text-xl font-light">{user?.fullname || "."}</p>
+                  <p className="text-sm text-green-500">в сети</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 border-t pt-3">
+                <span className="text-gray-500">📞</span>
+                <div>
+                  <p className="text-md">{user?.phone || "+998 97 000 00 00"}</p>
+                  <p className="text-sm text-gray-500">Телефон</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <span className="text-blue-500">@</span>
+                <div>
+                  <p className="text-md">{user?.username || "@username"}</p>
+                  <p className="text-sm text-gray-500">Имя пользователя</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 border-t pt-3">
+                <span className="text-gray-500">🕓</span>
+                <div>
+                  <p className="text-md">Архив историй</p>
+                  <p className="text-sm text-gray-500">7</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 };
