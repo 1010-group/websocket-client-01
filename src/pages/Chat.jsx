@@ -10,6 +10,7 @@ const Chat = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
 
+
   // 🔄 Загружаем историю сообщений
   useEffect(() => {
     if (!selectedUser || !currentUser) return;

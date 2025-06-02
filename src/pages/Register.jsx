@@ -1,16 +1,15 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
+    username: "",    // @username (id)
+    nickname: "",    // Display name
+    phone: "",
     password: "",
     confirmPassword: "",
-    profilePic: "",
+    image: "",
     description: "",
-    phone: "",
     birthDate: "",
   });
 
@@ -31,27 +30,29 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch("https://websocket-server-01.onrender.com/api/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/users/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
         navigate("/login");
       } else {
-        // Показываем подробное сообщение, если оно есть
         const message =
           typeof data.error === "string"
             ? data.error
             : data.message ||
-              (data.errors
-                ? Object.values(data.errors).join(", ")
-                : "Произошла ошибка");
+            (data.errors
+              ? Object.values(data.errors).join(", ")
+              : "Произошла ошибка");
         setError(message);
       }
     } catch (err) {
@@ -61,15 +62,12 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Левая часть с фоном */}
       <div
         className="w-1/2 bg-cover bg-center"
         style={{
           backgroundImage: "url('https://via.placeholder.com/800x1200')",
         }}
       />
-
-      {/* Правая часть с формой */}
       <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
         <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
 
@@ -90,11 +88,19 @@ const Register = () => {
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
-            type="email"
-            name="email"
-            value={formData.email}
+            type="text"
+            name="nickname"
+            value={formData.nickname}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder="Nickname"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Phone"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
@@ -115,8 +121,8 @@ const Register = () => {
           />
           <input
             type="text"
-            name="profilePic"
-            value={formData.profilePic}
+            name="image"
+            value={formData.image}
             onChange={handleChange}
             placeholder="Profile Picture URL"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
@@ -127,14 +133,6 @@ const Register = () => {
             value={formData.description}
             onChange={handleChange}
             placeholder="Description"
-            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
-          />
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Phone"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input

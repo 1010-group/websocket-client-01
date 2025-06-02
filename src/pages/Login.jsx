@@ -13,37 +13,38 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!phone || !password) {
-      setError("Заполните все поля.");
-      return;
+  if (!phone || !password) {
+    setError("Заполните все поля.");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://websocket-server-01.onrender.com/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ phone, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      dispatch(loginSuccess({ user: data.user }));
+      socket.emit("user_connected", data.user);
+      navigate("/");
+    } else {
+      setError(data.message || "Ошибка при входе");
     }
+  } catch (error) {
+    setError("Ошибка при подключении к серверу.");
+    console.error("Ошибка при входе:", error.message);
+  }
+};
 
-    try {
-      const response = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        dispatch(loginSuccess({ user: data.user }));
-        socket.emit("user_connected", data.user);
-        navigate("/");
-      } else {
-        setError(data.message || "Ошибка при входе");
-      }
-    } catch (error) {
-      setError("Ошибка при подключении к серверу.");
-      console.error("Ошибка при входе:", error.message);
-    }
-  };
 
   return (
     <div className="min-h-screen flex">
