@@ -48,13 +48,12 @@ const Login = () => {
   return (
     <div className="min-h-screen flex">
       <div
-        className="w-1/1 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('https://via.placeholder.com/800x1200')",
-        }}
-      ></div>
+        className="w-2/3 h-screen bg-cover bg-center"
+      >
+        <img src="./illust.png " className="h-screen w-full object-cover object-top" alt="" />
+      </div>
 
-      <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
+      <div className="w-1/3 bg-black text-white flex flex-col justify-center items-center p-8">
         <h1 className="text-4xl font-semibold mb-4">Добро пожаловать!</h1>
         <p className="text-lg mb-8">Войдите в вашу учетную запись.</p>
         <form

@@ -61,39 +61,41 @@ const App = () => {
   return (
     <div className="flex h-screen">
       {/* Left Sidebar - Online Users */}
-      <div className="w-3/12 bg-base-300 overflow-y-auto p-2">
-        <h2 className="text-xl font-bold mb-4">Online Users</h2>
+      <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
+        <h2 className="text-xl font-bold mb-4 h-2/10">Online Users</h2>
 
-        {loading ? (
-          <div className="flex justify-center">
-            <span className="loading loading-spinner text-primary"></span>
-          </div>
-        ) : sortedUsers.length === 0 ? (
-          <p className="text-gray-400">Hozircha foydalanuvchilar yo‘q</p>
-        ) : (
-          sortedUsers.map((u) => (
-            <div
-              key={u._id}
-              className="flex items-center gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition"
-              onClick={() => handleOpenChat(u)}
-            >
-              <img
-                className="w-12 h-12 rounded-full"
-                src={
-                  u.profilePic ||
-                  "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
-                }
-                alt={u.username}
-              />
-              <div>
-                <p className="font-semibold">{u.username}</p>
-                <p className={u.status ? "text-green-500" : "text-red-500"}>
-                  {u.status ? "Online" : "Offline"}
-                </p>
-              </div>
+        <div className="flex items-center gap-1 justify-center flex-col w-full">
+          {loading ? (
+            <div className="flex justify-center items-center flex-1 h-8/10">
+              <span className="loading loading-spinner text-primary"></span>
             </div>
-          ))
-        )}
+          ) : sortedUsers.length === 0 ? (
+            <p className="text-gray-400">Hozircha foydalanuvchilar yo‘q</p>
+          ) : (
+            sortedUsers.map((u) => (
+              <div
+                key={u._id}
+                className="flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition"
+                onClick={() => handleOpenChat(u)}
+              >
+                <img
+                  className="w-12 h-12 rounded-full"
+                  src={
+                    u.profilePic ||
+                    "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                  }
+                  alt={u.username}
+                />
+                <div>
+                  <p className="font-semibold">{u.username}</p>
+                  <p className={u.status ? "text-green-500" : "text-red-500"}>
+                    {u.status ? "Online" : "Offline"}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Main Chat Area */}
@@ -181,7 +183,7 @@ const App = () => {
                     <div className="flex justify-center items-center gap-5">
                       <div>
                         <button className="btn btn-error btn-soft mr-5 min-w-[140px]" onClick={handleLogout}>Да</button>
-                        <button className="btn btn-soft min-w-[140px]">Отмена</button>
+                        <button className="btn btn-soft min-w-[140px]" onClick={() => document.getElementById('my_modal_2').close()}>Отмена</button>
                       </div>
                     </div>
                   </div>
