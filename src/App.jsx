@@ -3,7 +3,8 @@ import socket from "./socket";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
 import { setSelectedUser } from "./redux/slices/selectedUser";
-import { MdMenu } from "react-icons/md";
+import { MdLogout, MdMenu } from "react-icons/md";
+import { logout } from "./redux/slices/authSlice";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -63,103 +64,143 @@ const App = () => {
 
   const sortedUsers = [...onlineUsers].sort((a, b) => b.status - a.status);
 
+  const handleLogout = () => {
+    dispatch(logout())
+  }
   return (
-    <div className="flex h-screen">
-      {/* Left Sidebar - Online Users */}
-      <div className="w-3/12 bg-base-300 overflow-y-auto p-2">
-        <h2 className="text-xl font-bold mb-4">Online Users</h2>
 
-        {loading ? (
-          <div className="flex justify-center">
-            <span className="loading loading-spinner text-primary"></span>
-          </div>
-        ) : onlineUsers.length === 0 ? (
-          <p className="text-gray-400">Hozircha foydalanuvchilar yo‘q</p>
-        ) : (
-          onlineUsers.map((u) => (
-            <div
-              key={u._id}
-              className="flex items-center gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition"
-              onClick={() => handleOpenChat(u)}
-            >
-              <img
-                className="w-12 h-12 rounded-full"
-                src={
-                  u.profilePic ||
-                  "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
-                }
-                alt={u.nickname || u.username}
-              />
-              <div>
-                <p className="font-semibold">{u.username}</p>
-                <p className={u.status ? "text-green-500" : "text-red-500"}>
-                  {u.status ? "Online" : "Offline"}
-                </p>
-              </div>
+   
+
+
+      <div className="flex h-screen">
+        {/* Left Sidebar - Online Users */}
+        <div className="w-3/12 bg-base-300 overflow-y-auto p-2">
+          <h2 className="text-xl font-bold mb-4">Online Users</h2>
+
+          {loading ? (
+            <div className="flex justify-center">
+              <span className="loading loading-spinner text-primary"></span>
             </div>
-          ))
-        )}
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="w-9/12 bg-base-100 flex justify-center items-center">
-        {isInsidePage ? <Outlet /> : <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>}
-      </div>
-
-      {/* Drawer: My Profile */}
-      <div className="fixed bottom-10 right-10 z-[999]">
-        <div className="drawer">
-          <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-          <div className="drawer-content">
-            <label htmlFor="my-drawer" className="btn btn-primary drawer-button">
-              <MdMenu />
-            </label>
-          </div>
-          <div className="drawer-side">
-            <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-            <div className="bg-base-200 text-base-content min-h-full w-80 p-4 space-y-4">
-              <h2 className="text-lg font-semibold">Мой профиль</h2>
-
-              <div className="flex items-center space-x-4">
+          ) : onlineUsers.length === 0 ? (
+            <p className="text-gray-400">Hozircha foydalanuvchilar yo‘q</p>
+          ) : (
+            onlineUsers.map((u) => (
+              <div
+                key={u._id}
+                className="flex items-center gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition"
+                onClick={() => handleOpenChat(u)}
+              >
                 <img
-                  src={user?.profilePic || "https://via.placeholder.com/64"}
-                  alt="Avatar"
-                  className="w-16 h-16 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full"
+                  src={
+                    u.profilePic ||
+                    "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                  }
+                  alt={u.nickname || u.username}
                 />
                 <div>
-                  <p className="text-xl font-light">{user?.fullname || "."}</p>
-                  <p className="text-sm text-green-500">в сети</p>
+                  <p className="font-semibold">{u.username}</p>
+                  <p className={u.status ? "text-green-500" : "text-red-500"}>
+                    {u.status ? "Online" : "Offline"}
+                  </p>
                 </div>
               </div>
+            ))
+          )}
+        </div>
 
-              <div className="flex items-center space-x-3 border-t pt-3">
-                <span className="text-gray-500">📞</span>
-                <div>
-                  <p className="text-md">{user?.phone || "+998 97 000 00 00"}</p>
-                  <p className="text-sm text-gray-500">Телефон</p>
+        {/* Main Chat Area */}
+        <div className="w-9/12 bg-base-100 flex justify-center items-center">
+          {isInsidePage ? <Outlet /> : <h1 className="text-3xl font-bold">Welcome to the Chat App!</h1>}
+        </div>
+
+        {/* Drawer: My Profile */}
+        <div className="fixed top-5 right-10 z-[999]">
+          <div className="drawer">
+            <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+            <div className="drawer-content">
+              <label htmlFor="my-drawer" className="btn btn-primary drawer-button">
+                <MdMenu />
+              </label>
+            </div>
+            <div className="drawer-side">
+              <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+              <div className="bg-base-200 text-base-content flex flex-col justify-between min-h-full w-80 p-4 space-y-4">
+                <div className="flex flex-col gap-5">
+                  <div>
+                    <h2 className="text-lg font-semibold">Мой профиль</h2>
+
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={user?.image || "https://via.placeholder.com/64"}
+                        alt="Avatar"
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="text-lg font-semibold">{user?.fullName || "."}</p>
+                        <p className="text-sm text-green-500">в сети</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-5 py-5 border-y ">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-gray-500">📞</span>
+                      <div>
+                        <p className="text-md">{user?.phone || "+998 97 000 00 00"}</p>
+                        <p className="text-sm text-gray-500">Телефон</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <span className="text-blue-500">@</span>
+                      <div>
+                        <p className="text-md">{user?.username || "@username"}</p>
+                        <p className="text-sm text-gray-500">Имя пользователя</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <span className="text-blue-500">❕</span>
+                      <div>
+                        <p className="text-md">{user?.description || "@username"}</p>
+                        <p className="text-sm text-gray-500">О себе</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 ">
+                      <span className="text-gray-500">🕓</span>
+                      <div>
+                        <p className="text-md">День рождения</p>
+                        <p className="text-sm text-gray-500">{user?.birthDate || "Не указано"}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center space-x-3">
-                <span className="text-blue-500">@</span>
-                <div>
-                  <p className="text-md">{user?.username || "@username"}</p>
-                  <p className="text-sm text-gray-500">Имя пользователя</p>
-                </div>
-              </div>
 
-              <div className="flex items-center space-x-3 border-t pt-3">
-                <span className="text-gray-500">🕓</span>
                 <div>
-                  <p className="text-md">Архив историй</p>
-                  <p className="text-sm text-gray-500">7</p>
+                  <button className="btn btn-error btn-soft w-full flex items-center gap-5" onClick={() => document.getElementById('my_modal_2').showModal()}>
+                    <span>Выйти из аккаунта</span>
+
+                    <span><MdLogout /></span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+        <dialog id="my_modal_2" className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Вы уверены что хотите выйти</h3>
+           <button>отмена</button>
+            <button className="btn btn-error btn-soft" onClick={handleLogout}>Выйти</button>
+          </div>
+          <form method="dialog" className="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
+      </div >
   );
 };
 

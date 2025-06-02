@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../socket";
-import moment from "moment";
-import "moment/locale/ru";
-moment.locale("ru");
+
 
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
