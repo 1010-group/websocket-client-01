@@ -13,17 +13,9 @@ const App = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
-<<<<<<< HEAD
-  const isChatPage = location.pathname.startsWith("/chat/");
-  const isFavoritesPage = location.pathname === "/favorites";
-  const isInsidePage = location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
-  const [chatMessages, setChatMessages] = useState([]);
-  console.log("USER:", user)
-=======
 
   const isInsidePage =
     location.pathname.startsWith("/chat/") || location.pathname === "/favorites";
->>>>>>> 759904fe31ac64b6a3a258d71cba8506bae8ddc6
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -108,12 +100,8 @@ const App = () => {
         )}
       </div>
 
-<<<<<<< HEAD
-      <div className="fixed bottom-16 right-2 z-[999]">
-=======
       {/* Drawer: My Profile */}
       <div className="fixed bottom-10 right-10 z-[999]">
->>>>>>> 759904fe31ac64b6a3a258d71cba8506bae8ddc6
         <div className="drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content">
