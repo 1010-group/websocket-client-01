@@ -3,7 +3,7 @@ import socket from "./socket";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
 import { setSelectedUser } from "./redux/slices/selectedUser";
-import { MdMenu } from "react-icons/md";
+import { MdLogout, MdMenu } from "react-icons/md";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -101,7 +101,7 @@ const App = () => {
       </div>
 
       {/* Drawer: My Profile */}
-      <div className="fixed bottom-10 right-10 z-[999]">
+      <div className="fixed top-5 right-10 z-[999]">
         <div className="drawer">
           <input id="my-drawer" type="checkbox" className="drawer-toggle" />
           <div className="drawer-content">
@@ -111,43 +111,65 @@ const App = () => {
           </div>
           <div className="drawer-side">
             <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-            <div className="bg-base-200 text-base-content min-h-full w-80 p-4 space-y-4">
-              <h2 className="text-lg font-semibold">Мой профиль</h2>
-
-              <div className="flex items-center space-x-4">
-                <img
-                  src={user?.profilePic || "https://via.placeholder.com/64"}
-                  alt="Avatar"
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+            <div className="bg-base-200 text-base-content flex flex-col justify-between min-h-full w-80 p-4 space-y-4">
+              <div className="flex flex-col gap-5">
                 <div>
-                  <p className="text-xl font-light">{user?.fullname || "."}</p>
-                  <p className="text-sm text-green-500">в сети</p>
+                  <h2 className="text-lg font-semibold">Мой профиль</h2>
+
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={user?.image || "https://via.placeholder.com/64"}
+                      alt="Avatar"
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-lg font-semibold">{user?.fullName || "."}</p>
+                      <p className="text-sm text-green-500">в сети</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-5 py-5 border-y ">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-gray-500">📞</span>
+                    <div>
+                      <p className="text-md">{user?.phone || "+998 97 000 00 00"}</p>
+                      <p className="text-sm text-gray-500">Телефон</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <span className="text-blue-500">@</span>
+                    <div>
+                      <p className="text-md">{user?.username || "@username"}</p>
+                      <p className="text-sm text-gray-500">Имя пользователя</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <span className="text-blue-500">❕</span>
+                    <div>
+                      <p className="text-md">{user?.description || "@username"}</p>
+                      <p className="text-sm text-gray-500">О себе</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 ">
+                    <span className="text-gray-500">🕓</span>
+                    <div>
+                      <p className="text-md">День рождения</p>
+                      <p className="text-sm text-gray-500">{user?.birthDate || "Не указано"}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 border-t pt-3">
-                <span className="text-gray-500">📞</span>
-                <div>
-                  <p className="text-md">{user?.phone || "+998 97 000 00 00"}</p>
-                  <p className="text-sm text-gray-500">Телефон</p>
-                </div>
-              </div>
 
-              <div className="flex items-center space-x-3">
-                <span className="text-blue-500">@</span>
-                <div>
-                  <p className="text-md">{user?.username || "@username"}</p>
-                  <p className="text-sm text-gray-500">Имя пользователя</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 border-t pt-3">
-                <span className="text-gray-500">🕓</span>
-                <div>
-                  <p className="text-md">Архив историй</p>
-                  <p className="text-sm text-gray-500">7</p>
-                </div>
+              <div>
+                <button className="btn btn-error btn-soft w-full flex items-center gap-5">
+                  <span>Выйти из аккаунта</span>
+                  <span><MdLogout /></span>
+                </button>
               </div>
             </div>
           </div>
