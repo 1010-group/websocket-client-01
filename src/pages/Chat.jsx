@@ -125,7 +125,7 @@ const Chat = () => {
             <div>
               {msg.from === currentUser._id ? <p className="text-end px-1 text-primary font-bold">Me</p> : <p className="font-bold">{selectedUser?.username}</p>}
               <span
-                className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words min-w-[220px] ${msg.from === currentUser._id
+                className={`inline-block px-3 py-1 rounded-2xl max-w-[570px] break-words min-w-[220px] ${msg.from === currentUser._id
                   ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
                   : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
                   }`}

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
 import { setSelectedUser } from "./redux/slices/selectedUser";
 import { MdLogout, MdMenu } from "react-icons/md";
+import { logout } from "./redux/slices/authSlice";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -52,6 +53,10 @@ const App = () => {
   };
 
   const sortedUsers = [...onlineUsers].sort((a, b) => b.status - a.status);
+
+  const handleLogout = () => {
+    dispatch(logout())
+  };
 
   return (
     <div className="flex h-screen">
@@ -163,13 +168,28 @@ const App = () => {
                   </div>
                 </div>
               </div>
-
-
               <div>
-                <button className="btn btn-error btn-soft w-full flex items-center gap-5">
+                <button className="btn btn-error btn-soft w-full flex items-center gap-5" onClick={() => document.getElementById('my_modal_2').showModal()}>
                   <span>Выйти из аккаунта</span>
                   <span><MdLogout /></span>
                 </button>
+                <dialog id="my_modal_2" className="modal">
+                  <div className="modal-box">
+                    <h3 className="font-bold text-lg text-error text-center">Выйти из аккаунта</h3>
+                    <p className="text-center py-8">Вы действительно хотите выйти из аккаунта?</p>
+
+                    <div className="flex justify-center items-center gap-5">
+                      <div>
+                        <button className="btn btn-error btn-soft mr-5 min-w-[140px]" onClick={handleLogout}>Да</button>
+                        <button className="btn btn-soft min-w-[140px]">Отмена</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form method="dialog" className="modal-backdrop">
+                    <button>close</button>
+                  </form>
+                </dialog>
               </div>
             </div>
           </div>
