@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../socket";
+import moment from "moment";
+import "moment/locale/ru"; // или "uz" если хочешь узбекский
+moment.locale("ru"); // или "uz"
 
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
@@ -85,6 +88,10 @@ const Chat = () => {
     });
   };
 
+  useEffect(() => {
+    console.log("chatMessages: ", chatMessages)
+  },[chatMessages])
+
   return (
     <div className="flex flex-col h-screen bg-base-100 flex-1">
       <div className="bg-base-300 h-[10%] p-4 shadow mb-2">
@@ -109,17 +116,26 @@ const Chat = () => {
         {chatMessages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 ${msg.from === currentUser._id ? "text-right" : "text-left"
-              }`}
+            className={`mb-2 ${msg.from === currentUser._id ? "flex items-center gap-4 justify-start flex-row-reverse" : "flex items-center gap-4 justify-start"
+              } `}
           >
-            <span
-              className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words ${msg.from === currentUser._id
-                ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
-                : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
-                }`}
-            >
-              {msg.text}
-            </span>
+            <figure>
+              <img className="size-14" src={msg?.from.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"} alt="" />
+            </figure>
+            <div>
+              {msg.from === currentUser._id ? <p className="text-end px-1 text-primary font-bold">Me</p> : <p className="font-bold">{selectedUser?.username}</p>}
+              <span
+                className={`inline-block px-3 py-1 rounded-2xl max-w-[70%] break-words min-w-[220px] ${msg.from === currentUser._id
+                  ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
+                  : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
+                  }`}
+              >
+                {msg.text}
+              </span>
+              <div className={`text-xs ${msg.from === currentUser._id ? "flex items-center gap-4 justify-end" : "flex items-center gap-4 justify-start"}`}>
+                <span className="text-balance text-base-content/35">{moment(msg.timestamp).calendar()}</span>
+              </div>
+            </div>
           </div>
 
         ))}
