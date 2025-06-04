@@ -1,22 +1,24 @@
-""; // src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import "./index.css";
 
 import { Provider } from "react-redux";
 import { store, persistor } from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
+
 import {
   createBrowserRouter,
   RouterProvider,
-  Navigate,
+  Outlet,
 } from "react-router-dom";
-import Register from "./pages/Register.jsx";
-import Login from "./pages/Login.jsx";
-import PrivateRouter from "./guard/PrivateRouter.jsx"
-import Chat from "./pages/Chat.jsx";
-import Favorites from "./pages/Favorites.jsx";
+
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import PrivateRouter from "./guard/PrivateRouter";
+import Chat from "./pages/Chat";
+import Favorites from "./pages/Favorites";
+import App from "./App";
+
 const router = createBrowserRouter([
   {
     path: "/",
