@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import socket from "../socket";
-import moment from "moment";
-import "moment/locale/ru";
-moment.locale("ru");
+import moment from "moment"; // ✅ ВАЖНО: импорт moment
+import { IoSendSharp } from "react-icons/io5";
 
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
@@ -23,7 +22,9 @@ const Chat = () => {
   }, [selectedUser]);
 
   useEffect(() => {
-    if (currentUser) socket.emit("user_joined", currentUser);
+    if (currentUser) {
+      socket.emit("user_joined", currentUser);
+    }
   }, [currentUser]);
 
   useEffect(() => {
@@ -75,6 +76,7 @@ const Chat = () => {
 
   const handleTyping = () => {
     if (!selectedUser) return;
+
     socket.emit("typing", {
       from: currentUser._id,
       to: selectedUser._id,
@@ -82,80 +84,87 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col w-full h-screen bg-base-100">
-      {/* Header */}
-      <div className="bg-base-300 p-4 shadow mb-2">
-        <h2 className="text-lg font-bold">{selectedUser?.username}</h2>
+    <div className="flex flex-col h-screen bg-base-100 flex-1">
+      <div className="bg-base-300 h-[10%] p-4 shadow mb-2">
+        <h2 className="text-lg font-bold">{selectedUser?.username || "Пользователь не выбран"}</h2>
         <p className={selectedUser?.status ? "text-success" : "text-error"}>
           {typingUser ? (
             <span className="flex items-center gap-1">
-              Печатает<span className="animate-bounce">.</span>
+              Печатает
+              <span className="animate-bounce">.</span>
               <span className="animate-bounce delay-150">.</span>
               <span className="animate-bounce delay-300">.</span>
             </span>
-          ) : selectedUser?.status ? "Online" : "Offline"}
+          ) : selectedUser?.status ? (
+            "Online"
+          ) : (
+            "Offline"
+          )}
         </p>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 w-full overflow-y-auto p-4 space-y-3">
-        {chatMessages.map((msg, i) => {
-          const isMe = msg.from === currentUser._id;
-          const avatar = isMe
-            ? currentUser.profilePic
-            : selectedUser?.profilePic;
 
-          return (
-            <div
-              key={i}
-              className={`flex gap-3 items-end ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              {!isMe && (
-                <img
-                  src={avatar || "https://via.placeholder.com/40"}
-                  className="w-10 h-10 rounded-full"
-                  alt="avatar"
-                />
+      <div className="flex-1 bg-base-100 rounded-md shadow p-4 overflow-y-auto">
+        {chatMessages.map((msg, index) => (
+          <div
+            key={index}
+            className={`mb-2 ${msg.from === currentUser._id
+              ? "flex items-center gap-4 justify-start flex-row-reverse"
+              : "flex items-center gap-4 justify-start"
+              }`}
+          >
+            <figure>
+              <img
+                className="size-14 rounded-full"
+                src={
+                  msg.from === currentUser._id
+                    ? currentUser.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                    : selectedUser?.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                }
+                alt=""
+              />
+            </figure>
+            <div>
+              {msg.from === currentUser._id ? (
+                <p className="text-end px-1 text-primary font-bold">Me</p>
+              ) : (
+                <p className="font-bold">{selectedUser?.username}</p>
               )}
-              <div>
-                <div
-                  className={`rounded-2xl p-3 text-white text-sm ${isMe
-                      ? "bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400"
-                      : "bg-gradient-to-r from-blue-900 via-indigo-700 to-cyan-500"
-                    }`}
-                >
-                  {msg.text}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {moment(msg.timestamp).calendar()}
-                </div>
+              <span
+                className={`inline-block px-3 py-1 rounded-2xl max-w-[570px] break-words min-w-[220px] ${msg.from === currentUser._id
+                  ? "bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white"
+                  : "bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white"
+                  }`}
+              >
+                {msg.text}
+              </span>
+              <div className={`text-xs ${msg.from === currentUser._id ? "flex items-center gap-4 justify-end" : "flex items-center gap-4 justify-start"}`}>
+                <span className="text-balance text-base-content/35">{moment(msg.timestamp).calendar()}</span>
               </div>
-              {isMe && (
-                <img
-                  src={avatar || "https://via.placeholder.com/40"}
-                  className="w-10 h-10 rounded-full"
-                  alt="avatar"
-                />
-              )}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
 
-      {/* Input */}
-      <div className="p-4 bg-base-300 flex gap-2">
+      <div className="mt-2 flex gap-2 bg-base-300 p-3 rounded-md h-1/12">
         <input
+          type="text"
+          placeholder="Xabar yozing..."
+          className="flex-1 p-2 border rounded"
           value={message}
           onChange={(e) => {
             setMessage(e.target.value);
             handleTyping();
           }}
-          onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-          placeholder="Xabar yozing..."
-          className="flex-1 input input-bordered"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSendMessage();
+          }}
         />
-        <button onClick={handleSendMessage} className="btn btn-primary">
-          Yuborish
+        <button
+          onClick={handleSendMessage}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          <IoSendSharp />
         </button>
       </div>
     </div>

@@ -196,7 +196,7 @@ const App = () => {
                   className="btn btn-error btn-soft w-full flex items-center gap-5"
                   onClick={() => setShowLogoutModal(true)}
                 >
-                  <span>log out of account</span>
+                  <span>Выйти из системы</span>
                   <span><MdLogout /></span>
                 </button>
               </div>
@@ -268,6 +268,20 @@ const App = () => {
                       </div>
                     </div>
                   </div>
+
+                  {
+                    user.role !== "user" && (
+                      <div>
+                        <p>Панель для админстратора</p>
+                        <div сlassName="flex flex-col gap-2 space-y-1">
+                          <button className="btn btn-soft btn-error w-full">Заблокировать</button>
+                          <button className="btn btn-soft btn-error w-full">Заглушить</button>
+                          <button className="btn btn-soft btn-error w-full">Предупреждение</button>
+                        </div>
+                      </div>
+
+                    )
+                  }
                 </div>
               </div>
             </div>
