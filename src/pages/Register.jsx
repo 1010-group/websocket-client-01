@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -6,6 +5,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
+    fullName: "",
     password: "",
     confirmPassword: "",
     profilePic: "",
@@ -44,7 +44,6 @@ const Register = () => {
       if (response.ok) {
         navigate("/login");
       } else {
-        // Показываем подробное сообщение, если оно есть
         const message =
           typeof data.error === "string"
             ? data.error
@@ -61,7 +60,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Левая часть с фоном */}
+      {/* Left section with background */}
       <div
         className="w-1/2 bg-cover bg-center"
         style={{
@@ -69,7 +68,7 @@ const Register = () => {
         }}
       />
 
-      {/* Правая часть с формой */}
+      {/* Right section with form */}
       <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
         <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
 
@@ -95,6 +94,14 @@ const Register = () => {
             value={formData.email}
             onChange={handleChange}
             placeholder="Email"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            placeholder="Full Name"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
