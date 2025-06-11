@@ -271,15 +271,25 @@ const App = () => {
 
                   {
                     user.role !== "user" && (
-                      <div>
-                        <p>Панель для админстратора</p>
-                        <div сlassName="flex flex-col gap-2 space-y-1">
-                          <button className="btn btn-soft btn-error w-full">Заблокировать</button>
-                          <button className="btn btn-soft btn-error w-full">Заглушить</button>
-                          <button className="btn btn-soft btn-error w-full">Предупреждение</button>
-                        </div>
-                      </div>
+                      <div className="flex flex-col gap-3">
+                        <p className="text-sm text-center">Панель для админстратора</p>
 
+                        <div сlassName="flex flex-col gap-2 space-y-1 py-5 border-y">
+                          <button className="btn btn-soft btn-error w-full btn-sm">Заблокировать</button>
+                          <button className="btn btn-soft btn-warning w-full btn-sm mt-1">Заглушить</button>
+                          <button className="btn btn-soft btn-warning w-full btn-sm mt-1">Предупреждение</button>
+                        </div>
+                        {
+                          user.role === "owner" && (
+
+                            <div className="flex flex-col  space-y-1 py-5 border-y">
+                              <button className="btn btn-success btn-soft btn-sm">Назначить админстратором</button>
+                              <button className="btn btn-success btn-soft btn-sm">Назначить Модератором</button>
+                              <button className="btn btn-error btn-soft btn-sm">Понизить роль</button>
+                            </div>
+                          )
+                        }
+                      </div>
                     )
                   }
                 </div>
