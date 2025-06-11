@@ -1,17 +1,15 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    fullName: "",
+    username: "",    // @username (id)
+    fullName: "",    // Display name
+    phone: "",
     password: "",
     confirmPassword: "",
-    profilePic: "",
+    image: "",
     description: "",
-    phone: "",
     birthDate: "",
   });
 
@@ -32,13 +30,16 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch("https://websocket-server-01.onrender.com/api/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/users/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
@@ -61,15 +62,12 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left section with background */}
       <div
         className="w-1/2 bg-cover bg-center"
         style={{
           backgroundImage: "url('https://via.placeholder.com/800x1200')",
         }}
       />
-
-      {/* Right section with form */}
       <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
         <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
 
@@ -91,11 +89,19 @@ const Register = () => {
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
-            type="email"
-            name="email"
-            value={formData.email}
+            type="text"
+            name="fullName"
+            value={formData.fullName}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder="Full Name"
+            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
+          />
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Phone"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input
@@ -124,8 +130,8 @@ const Register = () => {
           />
           <input
             type="text"
-            name="profilePic"
-            value={formData.profilePic}
+            name="image"
+            value={formData.image}
             onChange={handleChange}
             placeholder="Profile Picture URL"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
@@ -136,14 +142,6 @@ const Register = () => {
             value={formData.description}
             onChange={handleChange}
             placeholder="Description"
-            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
-          />
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Phone"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input

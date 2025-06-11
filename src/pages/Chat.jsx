@@ -106,6 +106,7 @@ const Chat = () => {
 
       <div className="flex-1 bg-base-100 rounded-md shadow p-4 overflow-y-auto">
         {chatMessages.map((msg, index) => (
+
           <div
             key={index}
             className={`mb-2 ${msg.from === currentUser._id
@@ -118,8 +119,8 @@ const Chat = () => {
                 className="size-14 rounded-full"
                 src={
                   msg.from === currentUser._id
-                    ? currentUser.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
-                    : selectedUser?.avatar || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                    ? currentUser.image || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                    : selectedUser?.image || "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
                 }
                 alt=""
               />
@@ -144,6 +145,7 @@ const Chat = () => {
             </div>
           </div>
         ))}
+        
       </div>
 
       <div className="mt-2 flex gap-2 bg-base-300 p-3 rounded-md h-1/12">

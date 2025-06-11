@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../redux/slices/authSlice";
@@ -20,9 +18,9 @@ const Login = () => {
       setError("Заполните все поля.");
       return;
     }
-
+    const server = false
     try {
-      const response = await fetch("https://websocket-server-01.onrender.com/api/users/login", {
+      const response = await fetch(server ? "https://websocket-server-01.onrender.com/api/users/login" : 'http://localhost:5000/api/users/login', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,7 +29,7 @@ const Login = () => {
       });
 
       const data = await response.json();
-
+      console.log(data)
       if (response.ok) {
         dispatch(loginSuccess({ user: data.user }));
         socket.emit("user_connected", data.user);
@@ -94,4 +92,3 @@ const Login = () => {
 };
 
 export default Login;
-
