@@ -1,4 +1,3 @@
-""; // src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
@@ -17,6 +16,9 @@ import Login from "./pages/Login.jsx";
 import PrivateRouter from "./guard/PrivateRouter.jsx"
 import Chat from "./pages/Chat.jsx";
 import Favorites from "./pages/Favorites.jsx";
+import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
+import "react-toastify/dist/ReactToastify.css";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -51,7 +53,10 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <RouterProvider router={router} />
+      <>
+        <RouterProvider router={router} />
+        <ToastContainer position="top-right" autoClose={3000} />
+      </>
     </PersistGate>
   </Provider>
 );
