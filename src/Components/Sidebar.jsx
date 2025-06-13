@@ -23,14 +23,6 @@ const Sidebar = () => {
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  const moveButton = () => {
-    const x = Math.floor(Math.random() * 300) - 150;
-    const y = Math.floor(Math.random() * 300) - 150;
-    setPosition({ x, y });
-  };
-
-
-
   const handleSearch = (searchTerm) => {
     if (!searchTerm) {
       setFilteredUsers(onlineUsers);
@@ -176,11 +168,31 @@ const Sidebar = () => {
     b.status ? 1 : 0 - (a.status ? 1 : 0)
   );
 
-  const makeAdmin = (userId, SelectedId, role) => {
+  useEffect(() => {
+    socket.on("admin_result", (data) => {
+      if (!data.success) {
+        toast.error(data.message);
+        return;
+      }
 
-    console.log("Make admin:", { userId, SelectedId, role });
-    socket.emit('make_admin', { userId, SelectedId, role });
+      toast.success(data.message);
+      setSelectedModalUser((prev) => ({
+        ...prev,
+        role: data.user.role,
+      }));
+    });
+
+    return () => {
+      socket.off("admin_result");
+    };
+  }, []);
+
+
+  const makeAdmin = (userId, selectedId, role) => {
+    if (!["admin", "moderator", "user"].includes(role)) return;
+    socket.emit('make_admin', { userId, SelectedId: selectedId, role });
   };
+
 
   return (
     <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5 ">
@@ -210,7 +222,7 @@ const Sidebar = () => {
           sortedUsers.map((u) => (
             <div
               key={u._id}
-              className="flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition"
+              className={`${u.role === "owner" ? "shadow-md shadow-error animate-pulse" : ""} max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
               onClick={() => handleOpenChat(u)}
             >
               <button onClick={(e) => { e.stopPropagation(); handleOpenModal(u); }}>
@@ -221,10 +233,25 @@ const Sidebar = () => {
                 />
               </button>
               <div>
-                <p className="font-semibold text-primary">{u.username}</p>
+                <p className={`${u.role === "owner" ? "text-error" : ""} font-semibold ${u.role === "owner" ? "text-shadow-md text-shadow-error" : ""}`}>{u.username}</p>
                 <p className={u.status ? "text-success" : "text-error"}>
                   {u.status ? "Online" : "Offline"}
                 </p>
+              </div>
+              <div className='flex-1 text-end text-xs'>
+                {u.role === "owner" && (
+                  <div className='flex items-center gap-2 flex-1 justify-end'>
+                    <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
+                    <img src="https://img.pikbest.com/origin/09/26/93/60DpIkbEsTGF9.png!sw800" className='size-12 absolute -top-5 -right-5' alt="" />
+                  </div>
+                )}
+                {u.role === "admin" && (
+                  <span className="text-info/75 text-shadow-md text-shadow-info">Admin</span>
+                )}
+                {u.role === "moderator" && (
+                  <span className="text-warning/75 text-shadow-md text-shadow-warning">Moderator</span>
+                )}
+                {u.role === "user" && <span className="badge badge-primary">User</span>}
               </div>
             </div>
           ))
@@ -339,8 +366,8 @@ const Sidebar = () => {
                               selectedModalUser?.role === "owner" ? <a role="tab" className={`tab ${selectedModalUser.role === "owner" ? "tab-active text-error font-bold" : ""}`}>Владелец</a> : ""
                             }
                             <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "admin" ? "tab-active text-primary" : ""}`} onClick={(e) => { e.preventDefault(), makeAdmin(user._id, selectedModalUser._id, "admin") }}>Админстратор</p>
-                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "moderator" ? "tab-active text-secondary" : ""}`} onClick={() => makeAdmin(user._id, selectedModalUser._id, "moderator")}>Модератор</p>
-                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "user" ? "tab-active text-white" : ""}`} onClick={() => makeAdmin(user._id, selectedModalUser._id, "user")}>Пользователь</p>
+                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "moderator" ? "tab-active text-secondary" : ""}`} onClick={(e) => { e.preventDefault(), makeAdmin(user._id, selectedModalUser._id, "moderator") }}>Модератор</p>
+                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "user" ? "tab-active text-white" : ""}`} onClick={(e) => { e.preventDefault(), makeAdmin(user._id, selectedModalUser._id, "user") }}>Пользователь</p>
                           </div>
                           <p>
                             {

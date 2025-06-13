@@ -81,6 +81,33 @@ const Navbar = () => {
         };
         fetchNotifications();
     }, [user]);
+    useEffect(() => {
+        socket.on("admin_result", (data) => {
+            if (data.success) {
+                toast.success(data.message);
+                setSelectedModalUser((prev) => ({
+                    ...prev,
+                    role: data.user.role,
+                }));
+            } else {
+                toast.error(data.message);
+            }
+        });
+
+        socket.on("broadcast_message", (data) => {
+            toast.info(data.message);
+        });
+
+        socket.on("personal_message", (data) => {
+            toast.warning(data.message);
+        });
+
+        return () => {
+            socket.off("admin_result");
+            socket.off("broadcast_message");
+            socket.off("personal_message");
+        };
+    }, []);
 
     useEffect(() => {
         socket.on('new_notification', (notification) => {
@@ -280,7 +307,7 @@ const Navbar = () => {
 
                                             }
                                         >
-                                                    Online
+                                            Online
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2 group duration-300">
