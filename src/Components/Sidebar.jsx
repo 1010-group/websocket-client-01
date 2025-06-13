@@ -176,6 +176,12 @@ const Sidebar = () => {
     b.status ? 1 : 0 - (a.status ? 1 : 0)
   );
 
+  const makeAdmin = (userId, SelectedId, role) => {
+
+    console.log("Make admin:", { userId, SelectedId, role });
+    socket.emit('make_admin', { userId, SelectedId, role });
+  };
+
   return (
     <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5 ">
       <h2 className="text-xl font-bold mb-4 h-2/10">Online Users</h2>
@@ -225,11 +231,11 @@ const Sidebar = () => {
         )}
       </div>
       <dialog id="my_modal_1" className="modal">
-        <div className="modal-box flex mb-4">
-          <div className="modal-action">
-            <form method="dialog">
-              <div className="flex flex-col gap-6 mb-4">
-                <div className="flex gap-4 flex-col">
+        <div className="modal-box flex mb-4 w-full">
+          <div className="modal-action flex-1 flex justify-center w-full">
+            <form method="dialog w-full bg-blue-400">
+              <div className="flex flex-col  w-full gap-6 mb-4">
+                <div className="flex w-full gap-4 items-center">
                   <img
                     className="w-14 h-14 rounded-full border-2 border-cyan-600 shadow-cyan-600 shadow-2xl"
                     src={
@@ -238,13 +244,11 @@ const Sidebar = () => {
                     }
                     alt={selectedModalUser?.username}
                   />
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="font-bold text-lg flex gap-2 text-shadow-cyan-600 text-primary">
                       <MdOutlineDriveFileRenameOutline className="text-primary text-2xl" />
-                      <p className="font-bold text-lg text-shadow-cyan-600 text-primary">
-                        {selectedModalUser?.username || user?.username}
-                      </p>
-                    </div>
+                      {selectedModalUser?.username || user?.username}
+                    </p>
                     <div className="flex items-center gap-2">
                       <div
                         aria-label={selectedModalUser?.status ? "success" : "error"}
@@ -264,57 +268,56 @@ const Sidebar = () => {
                         {selectedModalUser?.status ? "Online" : "Offline"}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 group duration-300">
-                      <div
-                        className="hidden group-hover:flex items-center gap-2 cursor-pointer duration-300"
-                        onClick={() => handleCopy(selectedModalUser?.phone || user?.phone)}
-                      >
-                        <div className="text-success text font-black duration-300">
-                          {copied ? "Copied!" : "Copy"}
-                        </div>
-                      </div>
-                      <FaPhoneSquareAlt className="text-success text-2xl" />
-                      <a
-                        href={`tel:${selectedModalUser?.phone || user?.phone}`}
-                        className="text-success"
-                      >
-                        {selectedModalUser?.phone || user?.phone}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <BsFillCalendarDateFill className="inline-block text-secondary text-2xl" />
-                      <p className="text-secondary">
-                        {selectedModalUser?.birthDate || user?.birthDate
-                          ? new Date(selectedModalUser?.birthDate || user?.birthDate).toLocaleDateString("en-CA")
-                          : "-"}
-                      </p>
-                    </div>
                   </div>
+
                 </div>
               </div>
-              <div className="flex flex-col gap-4">
-                {user.role !== "user" && (
-                  <div className="flex flex-col items-start gap-4">
-                    <p className="text-2xl text-accent font-semibold text-shadow-sm text-shadow-accent">
-                      Admin Panel
+              <div className="flex flex-col w-full gap-4">
+                <div className="flex flex-col gap-2">
+
+
+                  <div className="flex items-center gap-2 group duration-300">
+                    <div
+                      className="hidden group-hover:flex items-center gap-2 cursor-pointer duration-300"
+                      onClick={() => handleCopy(selectedModalUser?.phone || user?.phone)}
+                    >
+                      <div className="text-success text font-black duration-300">
+                        {copied ? "Copied!" : "Copy"}
+                      </div>
+                    </div>
+                    <FaPhoneSquareAlt className="text-success text-2xl" />
+                    <a
+                      href={`tel:${selectedModalUser?.phone || user?.phone}`}
+                      className="text-success"
+                    >
+                      {selectedModalUser?.phone || user?.phone}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BsFillCalendarDateFill className="inline-block text-secondary text-2xl" />
+                    <p className="text-secondary">
+                      {selectedModalUser?.birthDate || user?.birthDate
+                        ? new Date(selectedModalUser?.birthDate || user?.birthDate).toLocaleDateString("en-CA")
+                        : "-"}
                     </p>
-                    <div className="flex flex-col gap-2 sm:w-72">
-                      <button className="btn btn-soft btn-error w-full m-1">
-                        Ban
+                  </div>
+                </div>
+                {user.role !== "user" && (
+                  <div className="flex flex-col w-full gap-4">
+                    <p className="text-2xl text-accent font-semibold text-shadow-sm text-shadow-accent">
+                      Панель Администратора
+                    </p>
+                    <div className="flex flex-wrap w-full flex-1 gap-2">
+                      <button className="btn btn-soft btn-error m-1">
+                        Заблокировать
                       </button>
-                      <button className="btn btn-soft btn-error w-full m-1">
+                      <button className="btn btn-soft btn-error m-1">
                         Mute
                       </button>
                       {!selectedModalUser?.isBanned && (
                         <button
-                          className="btn btn-soft btn-error w-full m-1"
+                          className="btn btn-soft btn-error m-1"
                           onClick={() => handleWarn(selectedModalUser._id)}
-                          onMouseEnter={
-                            selectedModalUser?._id === "683fe137f3ea00f9588fd673"
-                              ? moveButton
-                              : undefined
-                          }
-
                           style={{
                             transform: `translate(${position.x}px, ${position.y}px)`,
                           }}
@@ -323,11 +326,29 @@ const Sidebar = () => {
                         </button>
                       )}
                       <button
-                        className="btn btn-soft btn-success w-full m-1"
+                        className="btn btn-soft btn-success m-1"
                         onClick={() => handleUnban(selectedModalUser._id)}
                       >
                         Unban
                       </button>
+                      <div className='flex justify-center flex-col items-center w-full py-5'>
+                        <p className='w-full px-3 mb-2'>Роль:</p>
+                        <button className=''>
+                          <div role="tablist" className="tabs tabs-box">
+                            {
+                              selectedModalUser?.role === "owner" ? <a role="tab" className={`tab ${selectedModalUser.role === "owner" ? "tab-active text-error font-bold" : ""}`}>Владелец</a> : ""
+                            }
+                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "admin" ? "tab-active text-primary" : ""}`} onClick={(e) => { e.preventDefault(), makeAdmin(user._id, selectedModalUser._id, "admin") }}>Админстратор</p>
+                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "moderator" ? "tab-active text-secondary" : ""}`} onClick={() => makeAdmin(user._id, selectedModalUser._id, "moderator")}>Модератор</p>
+                            <p role="tab" className={`tab ${selectedModalUser?.role && selectedModalUser?.role === "user" ? "tab-active text-white" : ""}`} onClick={() => makeAdmin(user._id, selectedModalUser._id, "user")}>Пользователь</p>
+                          </div>
+                          <p>
+                            {
+                              console.log("selectedModalUser?.role", selectedModalUser)
+                            }
+                          </p>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
