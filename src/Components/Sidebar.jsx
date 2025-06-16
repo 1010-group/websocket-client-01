@@ -7,7 +7,6 @@ import { FaPhoneSquareAlt } from 'react-icons/fa';
 import { BsFillCalendarDateFill } from 'react-icons/bs';
 import { toast } from 'react-toastify';
 import { MdOutlineDriveFileRenameOutline } from 'react-icons/md';
-import moment from 'moment';
 import { logout } from '../redux/slices/authSlice';
 
 const Sidebar = () => {
@@ -19,7 +18,7 @@ const Sidebar = () => {
   const [loading, setLoading] = useState(true);
   const [selectedModalUser, setSelectedModalUser] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [isChangingRole, setIsChangingRole] = useState(false); // New state for role change loading
+  const [isChangingRole, setIsChangingRole] = useState(false);
 
   const handleSearch = (searchTerm) => {
     if (!searchTerm) {
@@ -69,6 +68,12 @@ const Sidebar = () => {
       }
 
       setSelectedModalUser(data.user);
+      setOnlineUsers((prev) =>
+        prev.map((u) => (u._id === data.user._id ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned } : u))
+      );
+      setFilteredUsers((prev) =>
+        prev.map((u) => (u._id === data.user._id ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned } : u))
+      );
 
       if (data.user.isBanned) {
         if (data.user._id === user._id) {
@@ -96,7 +101,6 @@ const Sidebar = () => {
 
       toast.success('Пользователь разблокирован');
       setSelectedModalUser(data.user);
-      // Update onlineUsers to reflect unban
       setOnlineUsers((prev) =>
         prev.map((u) => (u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u))
       );
@@ -107,6 +111,28 @@ const Sidebar = () => {
       console.error(error);
       toast.error('Ошибка разблокировки');
     }
+  };
+
+  const handleBan = (SelectedId) => {
+    const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
+    socket.emit('ban_user', { userId: user._id, SelectedId, reason });
+
+    socket.once('ban_result', (data) => {
+      if (!data.success) {
+        toast.error(data.message);
+        return;
+      }
+
+      setSelectedModalUser(data.user);
+      setOnlineUsers((prev) =>
+        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
+      );
+      setFilteredUsers((prev) =>
+        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
+      );
+
+      toast.warn(`Пользователь ${data.user.username} заблокирован.`);
+    });
   };
 
   const makeAdmin = (userId, selectedId, role) => {
@@ -136,8 +162,6 @@ const Sidebar = () => {
       setLoading(false);
     };
 
-    socket.on('online_users', handleOnlineUsers);
-
     const handleAdminResult = (data) => {
       setIsChangingRole(false);
       if (!data.success) {
@@ -146,7 +170,6 @@ const Sidebar = () => {
       }
 
       toast.success(data.message);
-      // Update onlineUsers and filteredUsers with new role
       setOnlineUsers((prev) =>
         prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user.role } : u))
       );
@@ -156,6 +179,7 @@ const Sidebar = () => {
       setSelectedModalUser((prev) => (prev ? { ...prev, role: data.user.role } : prev));
     };
 
+    socket.on('online_users', handleOnlineUsers);
     socket.on('admin_result', handleAdminResult);
 
     const handleBeforeUnload = () => {
@@ -225,9 +249,7 @@ const Sidebar = () => {
           sortedUsers.map((u) => (
             <div
               key={u._id}
-              className={`${
-                u.role === 'owner' ? 'shadow-md shadow-error animate-pulse' : ''
-              } max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
+              className={`${u.role === 'owner' ? 'shadow-md shadow-error animate-pulse' : ''} max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
               onClick={() => handleOpenChat(u)}
             >
               <button onClick={(e) => { e.stopPropagation(); handleOpenModal(u); }}>
@@ -335,12 +357,21 @@ const Sidebar = () => {
                       Панель Администратора
                     </p>
                     <div className="flex flex-wrap w-full flex-1 gap-2">
-                      <button className="btn btn-soft btn-error m-1">Заблокировать</button>
-                      <button className="btn btn-soft btn-error m-1">Mute</button>
+                      <button
+                        className="btn btn-soft btn-error m-1"
+                        onClick={() => handleBan(selectedModalUser?._id)}
+                        disabled={selectedModalUser?.isBanned || selectedModalUser?.role === 'owner'}
+                      >
+                        Заблокировать
+                      </button>
+                      <button className="btn btn-soft btn-error m-1" disabled>
+                        Mute
+                      </button>
                       {!selectedModalUser?.isBanned && (
                         <button
                           className="btn btn-soft btn-error m-1"
                           onClick={() => handleWarn(selectedModalUser._id)}
+                          disabled={selectedModalUser?.role === 'owner'}
                         >
                           Warning ({selectedModalUser?.isWarn || 0}/3)
                         </button>
@@ -348,6 +379,7 @@ const Sidebar = () => {
                       <button
                         className="btn btn-soft btn-success m-1"
                         onClick={() => handleUnban(selectedModalUser._id)}
+                        // disabled={!selectedModalUser?.isBanned}
                       >
                         Unban
                       </button>
@@ -358,17 +390,15 @@ const Sidebar = () => {
                             <p
                               key={role}
                               role="tab"
-                              className={`tab ${
-                                selectedModalUser?.role === role
-                                  ? `tab-active ${
-                                      role === 'admin'
-                                        ? 'text-primary'
-                                        : role === 'moderator'
-                                        ? 'text-secondary'
-                                        : 'text-white'
-                                    }`
-                                  : ''
-                              }`}
+                              className={`tab ${selectedModalUser?.role === role
+                                ? `tab-active ${role === 'admin'
+                                  ? 'text-primary'
+                                  : role === 'moderator'
+                                    ? 'text-secondary'
+                                    : 'text-white'
+                                }`
+                                : ''
+                                }`}
                               onClick={(e) => {
                                 e.preventDefault();
                                 if (selectedModalUser?.role !== 'owner') {
