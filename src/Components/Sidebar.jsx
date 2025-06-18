@@ -116,14 +116,14 @@ const Sidebar = () => {
   const handleBan = (SelectedId) => {
     const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
     socket.emit('ban_user', { userId: user._id, SelectedId, reason });
-    console.log("BAN_USER: ",  { userId: user._id, SelectedId, reason })
-    socket.once('admin_result', (data) => {
+    console.log("BAN_USER: ", { userId: user._id, SelectedId, reason })
+    socket.once('ban_result', (data) => {
       if (!data.success) {
         toast.error(data.message);
         return;
       }
 
-      if(data.success) {
+      if (data.success) {
         toast.success(data.message)
       }
 
@@ -134,9 +134,14 @@ const Sidebar = () => {
       setFilteredUsers((prev) =>
         prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
       );
-      dispatch(logout())
-      toast.warn(`Пользователь ${data.user.username} заблокирован.`);
+
     });
+    socket.once("personal_message", (data) => {
+      if (data?.type === "warning") {
+        toast.warn(data.message);
+        dispatch(logout())
+      }
+    })
   };
 
   const makeAdmin = (userId, selectedId, role) => {
@@ -206,7 +211,7 @@ const Sidebar = () => {
 
       socket.on('warn_status', (data) => {
         if (data.isBanned) {
-          toast.error('Your account is banned');
+          // toast.error('Your account is banned');
           socket.emit('user_left', user);
           dispatch(logout());
           navigate('/login');
