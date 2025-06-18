@@ -116,11 +116,15 @@ const Sidebar = () => {
   const handleBan = (SelectedId) => {
     const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
     socket.emit('ban_user', { userId: user._id, SelectedId, reason });
-
-    socket.once('ban_result', (data) => {
+    console.log("BAN_USER: ",  { userId: user._id, SelectedId, reason })
+    socket.once('admin_result', (data) => {
       if (!data.success) {
         toast.error(data.message);
         return;
+      }
+
+      if(data.success) {
+        toast.success(data.message)
       }
 
       setSelectedModalUser(data.user);
@@ -130,7 +134,7 @@ const Sidebar = () => {
       setFilteredUsers((prev) =>
         prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
       );
-
+      dispatch(logout())
       toast.warn(`Пользователь ${data.user.username} заблокирован.`);
     });
   };
@@ -223,7 +227,7 @@ const Sidebar = () => {
 
   return (
     <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
-      <h2 className="text-xl font-bold mb-4 h-2/10">Online Users</h2>
+      <h2 className="text-xl font-bold mb-4">Online Users</h2>
       <label className="input mb-4 flex items-center gap-2 bg-base-200 rounded-full p-2 w-full shadow-md shadow-primary">
         <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
@@ -379,7 +383,7 @@ const Sidebar = () => {
                       <button
                         className="btn btn-soft btn-success m-1"
                         onClick={() => handleUnban(selectedModalUser._id)}
-                        // disabled={!selectedModalUser?.isBanned}
+                      // disabled={!selectedModalUser?.isBanned}
                       >
                         Unban
                       </button>
