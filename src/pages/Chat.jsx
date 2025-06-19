@@ -11,6 +11,8 @@ const Chat = () => {
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalUser, setModalUser] = useState(null);
 
   useEffect(() => {
     if (!selectedUser || !currentUser) return;
@@ -19,7 +21,7 @@ const Chat = () => {
       from: currentUser._id,
       to: selectedUser._id,
     });
-  }, [selectedUser]);
+  }, [selectedUser, currentUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -83,6 +85,16 @@ const Chat = () => {
     });
   };
 
+  const handleOpenModal = (user) => {
+    setModalUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalUser(null);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-base-100 flex-1">
       <div className="bg-base-200 h-[10%] p-4 shadow mb-2">
@@ -110,18 +122,20 @@ const Chat = () => {
             className={`mb-2 ${msg.from === currentUser._id
               ? 'flex items-center gap-4 justify-start flex-row-reverse'
               : 'flex items-center gap-4 justify-start'
-              }`}
+            }`}
           >
             <figure>
-              <img
-                className="size-14 rounded-full"
-                src={
-                  msg.from === currentUser._id
-                    ? currentUser.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
-                    : selectedUser?.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
-                }
-                alt=""
-              />
+              <button onClick={(e) => { e.stopPropagation(); handleOpenModal(msg.from === currentUser._id ? currentUser : selectedUser); }}>
+                <img
+                  className="size-14 rounded-full"
+                  src={
+                    msg.from === currentUser._id
+                      ? currentUser.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
+                      : selectedUser?.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
+                  }
+                  alt="User avatar"
+                />
+              </button>
             </figure>
             <div>
               {msg.from === currentUser._id ? (
@@ -131,14 +145,14 @@ const Chat = () => {
               )}
               <span
                 className={`inline-block px-3 py-1 rounded-2xl max-w-[570px] break-words min-w-[220px] ${msg.from === currentUser._id
-                  ? 'bg-[#833AB4] bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white'
-                  : 'bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white'
-                  }`}
+                  ? 'bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white'
+                  : 'bg-gradient-to-r from-[#020024] via-[#090979] to-[#00D4FF] text-white'
+                }`}
               >
                 {msg.text}
               </span>
               <div className={`text-xs ${msg.from === currentUser._id ? 'flex items-center gap-4 justify-end' : 'flex items-center gap-4 justify-start'}`}>
-                <span className="text-balance text-base-content/35">{moment(msg.timestamp).calendar()}</span>
+                <span className="text-base-content/35">{moment(msg.timestamp).calendar()}</span>
               </div>
             </div>
           </div>
@@ -166,6 +180,21 @@ const Chat = () => {
           <IoSendSharp />
         </button>
       </div>
+
+      {isModalOpen && modalUser && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">{modalUser.username}</h3>
+            <p>Phone: {modalUser.phone}</p>
+            <p>Role: {modalUser.role}</p>
+            <div className="modal-action">
+              <button className="btn" onClick={handleCloseModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

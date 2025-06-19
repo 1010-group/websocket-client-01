@@ -19,6 +19,7 @@
     "match-sorter": "^8.0.1",
     "moment": "^2.30.1",
     "react": "^19.0.0",
+    "react-battery-gauge": "^1.0.7",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",

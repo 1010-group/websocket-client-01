@@ -50,9 +50,9 @@ const Register = () => {
           typeof data.error === "string"
             ? data.error
             : data.message ||
-              (data.errors
-                ? Object.values(data.errors).join(", ")
-                : "Произошла ошибка");
+            (data.errors
+              ? Object.values(data.errors).join(", ")
+              : "Произошла ошибка");
         setError(message);
       }
     } catch (err) {
@@ -102,14 +102,6 @@ const Register = () => {
             value={formData.phone}
             onChange={handleChange}
             placeholder="Phone"
-            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
-          />
-          <input
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-            placeholder="Full Name"
             className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
           />
           <input

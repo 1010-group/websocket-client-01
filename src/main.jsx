@@ -10,6 +10,7 @@ import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
+  Link,
 } from "react-router-dom";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
@@ -19,6 +20,7 @@ import Favorites from "./pages/Favorites.jsx";
 import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
 import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
+import { FaCheck } from "react-icons/fa";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +49,20 @@ const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
+  {
+    path: "/togirlandi",
+    element: <div className="flex flex-col justify-center items-center h-screen text-4xl font-bold gap-4 text-success ">
+      <div class="animate-bounce flex items-center gap-2">
+        <span>Togirlandi</span>
+        <span><FaCheck /></span>
+      </div>
+      <div>
+        <Link class="/" className="btn btn-primary ">
+          <span className="">Bosh sahifaga qaytish</span>
+        </Link>
+      </div>
+    </div>,
+  }
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
