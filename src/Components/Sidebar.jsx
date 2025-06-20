@@ -150,6 +150,15 @@ const Sidebar = () => {
     socket.emit('make_admin', { userId, SelectedId: selectedId, role });
   };
 
+  const handleMute = async (userID, selectedUser, reason) => {
+    try {
+      console.log("OXSHADI ABDULLOH TENTAY")
+      socket.emit("mute_admin", { userID, selectedUser, reason })
+    } catch (e) {
+      console.log("WEBSOCKET ERROR: ", e)
+    }
+  }
+
   useEffect(() => {
     if (!user || !user._id) return;
 
@@ -375,7 +384,7 @@ const Sidebar = () => {
                       >
                         Заблокировать
                       </button>
-                      <button className="btn btn-soft btn-error m-1" disabled>
+                      <button className="btn btn-soft btn-error m-1" onClick={() => handleMute(user._id,selectedModalUser._id,"gey")}>
                         Mute
                       </button>
                       {!selectedModalUser?.isBanned && (
