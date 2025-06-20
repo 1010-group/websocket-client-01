@@ -277,22 +277,24 @@ const Sidebar = () => {
                 </p>
               </div>
               <div className="flex-1 text-end text-xs">
-                {u.role === 'owner' && (
-                  <div className="flex items-center gap-2 flex-1 justify-end">
-                    <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
-                    <img
-                      src="https://img.pikbest.com/origin/09/26/93/60DpIkbEsTGF9.png!sw800"
-                      className="size-12 absolute -top-5 -right-5"
-                      alt=""
-                    />
-                  </div>
-                )}
-                {u.role === 'admin' && (
-                  <span className="text-info/75 text-shadow-md text-shadow-info">Admin</span>
-                )}
-                {u.role === 'moderator' && (
-                  <span className="text-warning/75 text-shadow-md text-shadow-warning">Moderator</span>
-                )}
+                <div className="flex items-center gap-2 flex-1 justify-end relative">
+                  {u.isBanned ? (
+                    <span className="text-red-500 font-bold text-shadow-md text-shadow-error">Banned</span>
+                  ) : u.role === 'owner' ? (
+                    <>
+                      <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
+                      <img
+                        src="https://img.pikbest.com/origin/09/26/93/60DpIkbEsTGF9.png!sw800"
+                        className="size-12 absolute -top-5 -right-5"
+                        alt=""
+                      />
+                    </>
+                  ) : u.role === 'admin' ? (
+                    <span className="text-info/75 text-shadow-md text-shadow-info">Admin</span>
+                  ) : u.role === 'moderator' ? (
+                    <span className="text-warning/75 text-shadow-md text-shadow-warning">Moderator</span>
+                  ) : null}
+                </div>
               </div>
             </div>
           ))
