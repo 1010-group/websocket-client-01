@@ -12,10 +12,12 @@ import { Howl } from 'howler';
 import socket from '../socket';
 import notificationSound from '../assets/notification.wav';
 import errorSound from '../assets/error.wav';
+import Calls from './Calls';
 
 
 const Navbar = () => {
     const user = useSelector((state) => state.auth.user);
+    const selectedUser = useSelector((state) => state?.selectChat?.selectedUser);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
@@ -95,10 +97,12 @@ const Navbar = () => {
         });
 
         socket.on("broadcast_message", (data) => {
+            console.log("data: ", data.message)
             toast.info(data.message);
         });
 
         socket.on("personal_message", (data) => {
+            console.log("data: ", data.message)
             toast.warning(data.message);
         });
 
@@ -163,7 +167,9 @@ const Navbar = () => {
     const unreadCount = notifications.filter((notif) => !notif.read).length;
 
     return (
-        <div className="fixed top-5 right-10 z-[999] flex items-center gap-4">
+        <div className="fixed top-5 right-10 z-[999] flex items-center gap-2">
+            <Calls selectedUser={selectedUser} />
+
             <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn m-1 w-20 h-10 relative">
                     <IoNotifications size={24} />

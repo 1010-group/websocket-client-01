@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import socket from '../socket';
 import moment from 'moment';
 import { IoSendSharp } from 'react-icons/io5';
@@ -7,10 +7,13 @@ import { IoSendSharp } from 'react-icons/io5';
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
   const selectedUser = useSelector((state) => state.selectChat.selectedUser);
-
+  console.log("{REDUX}: ", currentUser)
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
+
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
     if (!selectedUser || !currentUser) return;
@@ -26,6 +29,14 @@ const Chat = () => {
       socket.emit('user_joined', currentUser);
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    socket.on("mute_oluvchi_result", (data) => {
+      console.log("oluvchi:", data)
+      dispatch(login(data))
+      console.log("currentuser: ", currentUser)
+    })
+  }, [])
 
   useEffect(() => {
     const receiveMessage = (data) => {

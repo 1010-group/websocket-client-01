@@ -116,7 +116,6 @@ const Sidebar = () => {
   const handleBan = (SelectedId) => {
     const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
     socket.emit('ban_user', { userId: user._id, SelectedId, reason });
-    console.log("BAN_USER: ", { userId: user._id, SelectedId, reason })
     socket.once('ban_result', (data) => {
       if (!data.success) {
         toast.error(data.message);
@@ -137,6 +136,7 @@ const Sidebar = () => {
 
     });
     socket.once("personal_message", (data) => {
+      console.log("DATA: ", data.message)
       if (data?.type === "warning") {
         toast.warn(data.message);
         dispatch(logout())
@@ -152,12 +152,45 @@ const Sidebar = () => {
 
   const handleMute = async (userID, selectedUser, reason) => {
     try {
-      console.log("OXSHADI ABDULLOH TENTAY")
-      socket.emit("mute_admin", { userID, selectedUser, reason })
+      socket.emit("mute_admin", { userID, selectedUser, reason });
+
+      socket.once("mute_beruvchi", (data) => {
+        if (!data.success) {
+          toast.error(data.message || "Mute berishda xatolik yuz berdi");
+          return;
+        }
+
+        // ✅ isMuted qiymatiga qarab toast chiqaramiz
+        if (data.user.isMuted) {
+          toast.success(`${data.user.username} muvaffaqiyatli mute qilindi.`);
+        } else {
+          toast.info(`${data.user.username} mute holatidan chiqarildi.`);
+        }
+
+        // 🔄 UI holatini yangilash
+        setSelectedModalUser((prev) =>
+          prev?._id === data.user._id ? { ...prev, isMuted: data.user.isMuted } : prev
+        );
+
+        setOnlineUsers((prev) =>
+          prev.map((u) =>
+            u._id === data.user._id ? { ...u, isMuted: data.user.isMuted } : u
+          )
+        );
+
+        setFilteredUsers((prev) =>
+          prev.map((u) =>
+            u._id === data.user._id ? { ...u, isMuted: data.user.isMuted } : u
+          )
+        );
+      });
+
     } catch (e) {
-      console.log("WEBSOCKET ERROR: ", e)
+      console.error("WEBSOCKET ERROR: ", e);
+      toast.error("Mute berishda xatolik yuz berdi");
     }
-  }
+  };
+
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -189,12 +222,12 @@ const Sidebar = () => {
 
       toast.success(data.message);
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user.role } : u))
+        prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user?.role } : u))
       );
       setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user.role } : u))
+        prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user?.role } : u))
       );
-      setSelectedModalUser((prev) => (prev ? { ...prev, role: data.user.role } : prev));
+      setSelectedModalUser((prev) => (prev ? { ...prev, role: data.user?.role } : prev));
     };
 
     socket.on('online_users', handleOnlineUsers);
@@ -267,7 +300,7 @@ const Sidebar = () => {
           sortedUsers.map((u) => (
             <div
               key={u._id}
-              className={`${u.role === 'owner' ? 'shadow-md shadow-error animate-pulse' : ''} max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
+              className={`${u?.role === 'owner' ? 'shadow-md shadow-error animate-pulse' : ''} max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
               onClick={() => handleOpenChat(u)}
             >
               <button onClick={(e) => { e.stopPropagation(); handleOpenModal(u); }}>
@@ -278,7 +311,7 @@ const Sidebar = () => {
                 />
               </button>
               <div>
-                <p className={`${u.role === 'owner' ? 'text-error' : ''} font-semibold ${u.role === 'owner' ? 'text-shadow-md text-shadow-error' : ''}`}>
+                <p className={`${u?.role === 'owner' ? 'text-error' : ''} font-semibold ${u?.role === 'owner' ? 'text-shadow-md text-shadow-error' : ''}`}>
                   {u.username}
                 </p>
                 <p className={u.status ? 'text-success' : 'text-error'}>
@@ -289,7 +322,7 @@ const Sidebar = () => {
                 <div className="flex items-center gap-2 flex-1 justify-end relative">
                   {u.isBanned ? (
                     <span className="text-red-500 font-bold text-shadow-md text-shadow-error">Banned</span>
-                  ) : u.role === 'owner' ? (
+                  ) : u?.role === 'owner' ? (
                     <>
                       <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
                       <img
@@ -298,9 +331,9 @@ const Sidebar = () => {
                         alt=""
                       />
                     </>
-                  ) : u.role === 'admin' ? (
+                  ) : u?.role === 'admin' ? (
                     <span className="text-info/75 text-shadow-md text-shadow-info">Admin</span>
-                  ) : u.role === 'moderator' ? (
+                  ) : u?.role === 'moderator' ? (
                     <span className="text-warning/75 text-shadow-md text-shadow-warning">Moderator</span>
                   ) : null}
                 </div>
@@ -371,7 +404,7 @@ const Sidebar = () => {
                     </p>
                   </div>
                 </div>
-                {['admin', 'owner'].includes(user.role) && (
+                {['admin', 'owner'].includes(user?.role) && (
                   <div className="flex flex-col w-full gap-4">
                     <p className="text-2xl text-accent font-semibold text-shadow-sm text-shadow-accent">
                       Панель Администратора
@@ -384,7 +417,7 @@ const Sidebar = () => {
                       >
                         Заблокировать
                       </button>
-                      <button className="btn btn-soft btn-error m-1" onClick={() => handleMute(user._id,selectedModalUser._id,"gey")}>
+                      <button className="btn btn-soft btn-error m-1" onClick={() => handleMute(user._id, selectedModalUser._id, "gey")}>
                         Mute
                       </button>
                       {!selectedModalUser?.isBanned && (

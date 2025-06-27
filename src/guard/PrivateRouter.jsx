@@ -11,7 +11,8 @@ const PrivateRouter = ({ children }) => {
 
   useEffect(() => {
     if (!user) {
-      navigate("/")
+      console.log("CHIQISH")
+      navigate("/login")
     }
   }, [user])
 
