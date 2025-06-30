@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Sidebar from './Components/Sidebar';
@@ -10,10 +10,9 @@ import { setIncomingCall, clearIncomingCall } from './redux/slices/callSlice';
 
 const App = () => {
   const dispatch = useDispatch();
-  const incomingCall = useSelector((state) => state);
-  console.log("incomeCall: ", incomingCall);
+  const incomingCall = useSelector((state) => state.call.incomingCall);
+  const peerRef = useRef(null); // ✅ Peer saqlash uchun
 
-  
   useEffect(() => {
     socket.on("incoming_call", ({ offer, caller, from }) => {
       dispatch(setIncomingCall({ offer, caller, from }));
@@ -21,13 +20,21 @@ const App = () => {
     });
 
     socket.on("call_ended", () => {
+      peerRef.current?.close(); // 💥 connectionni toza yop
       dispatch(clearIncomingCall());
       document.getElementById("incoming_call_modal")?.close();
+    });
+
+    socket.on("ice_candidate", ({ candidate }) => {
+      if (peerRef.current) {
+        peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      }
     });
 
     return () => {
       socket.off("incoming_call");
       socket.off("call_ended");
+      socket.off("ice_candidate");
     };
   }, [dispatch]);
 
@@ -35,9 +42,28 @@ const App = () => {
     if (!incomingCall) return;
 
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    const peer = new RTCPeerConnection();
+    const peer = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    });
+    peerRef.current = peer;
 
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
+
+    peer.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice_candidate", {
+          targetId: incomingCall.from,
+          candidate: event.candidate,
+        });
+      }
+    };
+
+    peer.ontrack = (event) => {
+      const remoteStream = event.streams[0];
+      const videoElement = document.getElementById("remote_video");
+      if (videoElement) videoElement.srcObject = remoteStream;
+    };
+
     await peer.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
@@ -54,10 +80,10 @@ const App = () => {
   const handleReject = () => {
     if (!incomingCall) return;
     socket.emit("end_call", { targetId: incomingCall.from });
+    peerRef.current?.close(); // 🧼
     document.getElementById("incoming_call_modal")?.close();
     dispatch(clearIncomingCall());
   };
-
   return (
     <div className="flex h-screen">
       <Sidebar />
