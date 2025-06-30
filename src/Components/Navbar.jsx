@@ -168,7 +168,7 @@ const Navbar = () => {
 
     return (
         <div className="fixed top-5 right-10 z-[999] flex items-center gap-2">
-            <Calls selectedUser={selectedUser} />
+            <Calls selectedUser={selectedUser} currentUser={user} />
 
             <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn m-1 w-20 h-10 relative">

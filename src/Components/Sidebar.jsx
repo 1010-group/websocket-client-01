@@ -8,18 +8,19 @@ import { BsFillCalendarDateFill } from 'react-icons/bs';
 import { toast } from 'react-toastify';
 import { MdOutlineDriveFileRenameOutline } from 'react-icons/md';
 import { logout } from '../redux/slices/authSlice';
+import { setOnlineUsers } from "../redux/slices/onlineUsers";
 
 const Sidebar = () => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [onlineUsers, setOnlineUsers] = useState([]);
+  // const [onlineUsers, setOnlineUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedModalUser, setSelectedModalUser] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isChangingRole, setIsChangingRole] = useState(false);
-
+  const onlineUsers = useSelector(state => state?.onlineUsers?.onlineUsers);
   const handleSearch = (searchTerm) => {
     if (!searchTerm) {
       setFilteredUsers(onlineUsers);
@@ -191,6 +192,13 @@ const Sidebar = () => {
     }
   };
 
+  useEffect(() => {
+    if (onlineUsers.length > 0) {
+      dispatch(setOnlineUsers(onlineUsers));
+    }
+
+  }, [onlineUsers])
+
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -210,6 +218,7 @@ const Sidebar = () => {
       const filtered = users.filter((u) => u._id !== user._id);
       setOnlineUsers(filtered);
       setFilteredUsers(filtered);
+      dispatch(setOnlineUsers(filtered)); // ✅ redux-toolkit bilan bu ishlaydi
       setLoading(false);
     };
 

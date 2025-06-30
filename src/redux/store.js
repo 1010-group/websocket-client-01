@@ -1,8 +1,11 @@
-// src/app/store.js
 import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
+
 import authReducer from "./slices/authSlice";
 import selectChatReducer from "./slices/selectedUser";
+import onlineUsersReducer from "./slices/onlineUsers"; // ✅ Correct import
+import callReducer from "./slices/callSlice";
+
 import {
   persistStore,
   persistReducer,
@@ -15,19 +18,25 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
+// Combine all reducers
 const rootReducer = combineReducers({
   auth: authReducer,
-  selectChat: selectChatReducer
+  selectChat: selectChatReducer,
+  onlineUsers: onlineUsersReducer,
+  call: callReducer,
 });
 
+// Config for persisting store
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth"], // Только auth будем сохранять
+  whitelist: ["auth"], // only auth state will be persisted
 };
 
+// Wrap rootReducer with persistReducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
+// Create store
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -38,4 +47,5 @@ export const store = configureStore({
     }),
 });
 
+// Create persistor
 export const persistor = persistStore(store);
