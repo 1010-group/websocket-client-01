@@ -1,43 +1,42 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { IoIosCall } from "react-icons/io";
+import { IoIosCall } from 'react-icons/io';
 import { MdCallEnd } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
 import socket from '../socket';
-import { useSelector } from 'react-redux';
+import { setStatus } from '../redux/slices/callSlice';
 
 const Calls = ({ selectedUser, currentUser }) => {
-  const [status, setStatus] = useState("Calling...");
+  const dispatch = useDispatch();
+  const [status, setStatusText] = useState('Calling...');
   const [isCalling, setIsCalling] = useState(false);
-  const localVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
+
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
-  const onlineUsers = useSelector((state) => state?.onlineUsers?.onlineUsers); // ✅ correct slice
+  const onlineUsers = useSelector((state) => state.onlineUsers.onlineUsers);
 
   const handleCall = async () => {
-    console.log("online Users: ", onlineUsers)
-    const target = onlineUsers.find(u => u._id === selectedUser._id);
-
-    console.log("TARGET: ", target)
-    if (!target || !target.socketId) {
-      alert("❌ Foydalanuvchi offline yoki socketId yo‘q.");
+    const target = onlineUsers.find((u) => u._id === selectedUser._id);
+    if (!target?.socketId) {
+      alert('❌ Foydalanuvchi offline yoki socketId yo‘q.');
       return;
     }
 
     setIsCalling(true);
     document.getElementById('my_modal_call')?.showModal();
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     localStreamRef.current = stream;
-    localVideoRef.current.srcObject = stream;
 
-    const peer = new RTCPeerConnection();
+    const peer = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    });
     peerRef.current = peer;
 
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+    stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
     peer.onicecandidate = (event) => {
       if (event.candidate) {
-        socket.emit("ice_candidate", {
+        socket.emit('ice_candidate', {
           targetId: target.socketId,
           candidate: event.candidate,
         });
@@ -45,22 +44,14 @@ const Calls = ({ selectedUser, currentUser }) => {
     };
 
     peer.ontrack = (event) => {
-      remoteVideoRef.current.srcObject = event.streams[0];
+      const remoteAudio = document.getElementById('remote_audio');
+      if (remoteAudio) remoteAudio.srcObject = event.streams[0];
     };
 
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
-    console.log("OFFER: ", {
-      targetId: target.socketId,
-      offer,
-      caller: {
-        _id: currentUser._id,
-        username: currentUser.username,
-        image: currentUser.image,
-        socketId: socket.id,
-      },
-    })
-    socket.emit("call_user", {
+
+    socket.emit('call_user', {
       targetId: target.socketId,
       offer,
       caller: {
@@ -74,50 +65,56 @@ const Calls = ({ selectedUser, currentUser }) => {
 
   const endCall = () => {
     peerRef.current?.close();
-    localStreamRef.current?.getTracks().forEach(track => track.stop());
-    socket.emit("end_call", { targetId: selectedUser?.socketId }); // may be undefined
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    socket.emit('end_call', { targetId: selectedUser?.socketId });
     setIsCalling(false);
-    setStatus("Calling...");
+    setStatusText('Calling...');
+    document.getElementById('my_modal_call')?.close();
   };
 
   useEffect(() => {
-    socket.on("call_answered", async ({ answer }) => {
+    socket.on('call_answered', async ({ answer }) => {
       if (!peerRef.current) return;
       await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-      setStatus("Connected");
+      setStatusText('Connected');
+      dispatch(setStatus('in-call'));
     });
 
-    socket.on("ice_candidate", ({ candidate }) => {
-      if (peerRef.current) {
-        peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+    socket.on('ice_candidate', ({ candidate }) => {
+      const peer = peerRef.current;
+      if (peer && peer.signalingState !== 'closed') {
+        peer.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
       }
     });
 
-    socket.on("call_ended", () => {
+    socket.on('call_ended', () => {
       endCall();
-      setStatus("Call Ended");
     });
 
     return () => {
-      socket.off("call_answered");
-      socket.off("ice_candidate");
-      socket.off("call_ended");
+      socket.off('call_answered');
+      socket.off('ice_candidate');
+      socket.off('call_ended');
     };
   }, []);
 
   return (
     <div>
-      <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}><IoIosCall /></button>
+      <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}>
+        <IoIosCall />
+      </button>
+
       <dialog id="my_modal_call" className="modal">
-        <div className="modal-box w-full max-w-xl">
-          <div className='flex flex-col items-center py-4'>
-            <video ref={localVideoRef} autoPlay muted className="rounded-lg w-40 h-40" />
-            <video ref={remoteVideoRef} autoPlay className="rounded-lg w-40 h-40 mt-4" />
-            <figcaption className='text-center mt-2 text-accent animate-pulse'>{status}</figcaption>
+        <div className="modal-box w-full max-w-md">
+          <div className="flex flex-col items-center py-4">
+            <audio id="remote_audio" autoPlay controls className="mb-4" />
+            <figcaption className="text-center mt-2 text-accent animate-pulse">{status}</figcaption>
           </div>
           <div className="modal-action justify-center">
             <form method="dialog">
-              <button className="btn btn-error btn-soft text-2xl" onClick={endCall}><MdCallEnd /></button>
+              <button className="btn btn-error btn-soft text-2xl" onClick={endCall}>
+                <MdCallEnd />
+              </button>
             </form>
           </div>
         </div>
