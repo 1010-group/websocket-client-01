@@ -1,4 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+// Full audio-only WebRTC call logic
+// This includes caller and callee sides with working audio, signaling, and timer.
+
+// ========== App.jsx ==========
+import React, { useEffect, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Sidebar from './Components/Sidebar';
@@ -13,6 +17,9 @@ const App = () => {
   const incomingCall = useSelector((state) => state.call.incomingCall);
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const [callDuration, setCallDuration] = useState(0);
 
   useEffect(() => {
     socket.on("incoming_call", ({ offer, caller, from }) => {
@@ -20,16 +27,17 @@ const App = () => {
     });
 
     socket.on("call_ended", () => {
-      console.log("📴 Call ended");
-
       peerRef.current?.close();
       peerRef.current = null;
 
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
       localStreamRef.current = null;
 
-      const remoteAudio = document.getElementById("remote_audio");
-      if (remoteAudio) remoteAudio.srcObject = null;
+      const audio = document.getElementById("remote_audio");
+      if (audio) audio.srcObject = null;
+
+      clearInterval(timerRef.current);
+      setCallDuration(0);
 
       dispatch(clearIncomingCall());
       document.getElementById("incoming_call_modal")?.close();
@@ -72,7 +80,10 @@ const App = () => {
 
     peer.ontrack = (event) => {
       const audio = document.getElementById("remote_audio");
-      if (audio) audio.srcObject = event.streams[0];
+      if (audio) {
+        audio.srcObject = event.streams[0];
+        audio.play().catch(console.error);
+      }
     };
 
     await peer.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
@@ -84,7 +95,9 @@ const App = () => {
       answer,
     });
 
-    // ❌ Modalni bu yerda yopmaymiz! → call_ended da yopiladi
+    timerRef.current = setInterval(() => {
+      setCallDuration((prev) => prev + 1);
+    }, 1000);
   };
 
   const handleReject = () => {
@@ -94,6 +107,9 @@ const App = () => {
 
     peerRef.current?.close();
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
+
+    clearInterval(timerRef.current);
+    setCallDuration(0);
 
     dispatch(clearIncomingCall());
     document.getElementById("incoming_call_modal")?.close();
@@ -109,15 +125,14 @@ const App = () => {
         </div>
       </div>
 
-      {/* Hidden audio player */}
-      <audio id="remote_audio" autoPlay className="hidden" />
+      <audio id="remote_audio" autoPlay className="hidden" playsInline />
 
-      {/* Incoming Call Modal */}
       {incomingCall && (
         <IncomingCallModal
           caller={incomingCall.caller}
           onAccept={handleAccept}
           onReject={handleReject}
+          callDuration={callDuration}
         />
       )}
     </div>

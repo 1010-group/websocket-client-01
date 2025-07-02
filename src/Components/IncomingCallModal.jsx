@@ -1,14 +1,20 @@
+
+// ========== IncomingCallModal.jsx ==========
 import React, { useEffect } from 'react';
 import { IoIosCall } from "react-icons/io";
 import { MdCallEnd } from "react-icons/md";
 
-const IncomingCallModal = ({ caller, onAccept, onReject }) => {
+const IncomingCallModal = ({ caller, onAccept, onReject, callDuration }) => {
   useEffect(() => {
     const modal = document.getElementById("incoming_call_modal");
-    if (modal) {
-      modal.showModal(); // ✅ DOMga tushgach ochamiz
-    }
+    if (modal) modal.showModal();
   }, []);
+
+  const formatTime = (seconds) => {
+    const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const secs = String(seconds % 60).padStart(2, '0');
+    return `${mins}:${secs}`;
+  };
 
   return (
     <dialog id="incoming_call_modal" className="modal modal-bottom sm:modal-middle">
@@ -22,7 +28,7 @@ const IncomingCallModal = ({ caller, onAccept, onReject }) => {
           />
           <h4 className="text-lg mt-4">{caller?.username}</h4>
           <p className="opacity-70 text-sm">{caller?.phone || 'Unknown number'}</p>
-          <p className="text-accent mt-2 animate-pulse">Ulanmoqda...</p>
+          <p className="mt-2 text-lime-300 font-mono text-sm">⏱ {formatTime(callDuration)}</p>
         </div>
 
         <div className="modal-action justify-center mt-6 gap-5">
