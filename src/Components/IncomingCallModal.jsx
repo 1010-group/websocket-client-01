@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IoIosCall } from "react-icons/io";
 import { MdCallEnd } from "react-icons/md";
 
 const IncomingCallModal = ({ caller, onAccept, onReject }) => {
+  useEffect(() => {
+    const modal = document.getElementById("incoming_call_modal");
+    if (modal) {
+      modal.showModal(); // ✅ DOMga tushgach ochamiz
+    }
+  }, []);
+
   return (
     <dialog id="incoming_call_modal" className="modal modal-bottom sm:modal-middle">
       <div className="modal-box bg-neutral text-neutral-content">
@@ -15,6 +22,7 @@ const IncomingCallModal = ({ caller, onAccept, onReject }) => {
           />
           <h4 className="text-lg mt-4">{caller?.username}</h4>
           <p className="opacity-70 text-sm">{caller?.phone || 'Unknown number'}</p>
+          <p className="text-accent mt-2 animate-pulse">Ulanmoqda...</p>
         </div>
 
         <div className="modal-action justify-center mt-6 gap-5">
