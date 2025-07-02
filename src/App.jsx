@@ -72,7 +72,26 @@ const App = () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     localStreamRef.current = stream;
 
-    const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    const peer = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "openai",
+          credential: "openai"
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: "openai",
+          credential: "openai"
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443?transport=tcp",
+          username: "openai",
+          credential: "openai"
+        },
+      ]
+    });
     peerRef.current = peer;
 
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
