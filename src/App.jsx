@@ -59,7 +59,10 @@ const App = () => {
     peerRef.current = null;
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
-    remoteAudioRef.current.srcObject = null;
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.pause();
+      remoteAudioRef.current.srcObject = null;
+    }
     clearInterval(callIntervalRef.current);
     setCallDuration(0);
     dispatch(clearIncomingCall());
@@ -76,11 +79,11 @@ const App = () => {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         {
-          urls: "turn:openrelay.metered.ca:443",
+          urls: "turn:relay.metered.ca:443",
           username: "openrelayproject",
-          credential: "openrelayproject"
-        }
-      ]
+          credential: "openrelayproject",
+        },
+      ],
     });
     peerRef.current = peer;
 
@@ -96,9 +99,13 @@ const App = () => {
     };
 
     peer.ontrack = (event) => {
+      console.log("📥 [ontrack] stream:", event.streams[0]);
       if (remoteAudioRef.current && event.streams[0]) {
         remoteAudioRef.current.srcObject = event.streams[0];
-        remoteAudioRef.current.play().catch((e) => console.log("play error:", e));
+        remoteAudioRef.current
+          .play()
+          .then(() => console.log("🔊 Playing remote stream"))
+          .catch((e) => console.error("🔇 Play error:", e));
       }
     };
 
@@ -133,7 +140,13 @@ const App = () => {
         <Navbar />
         <div className="flex-1 bg-base-100 flex justify-center items-center relative">
           <Outlet />
-          <audio ref={remoteAudioRef} autoPlay playsInline hidden />
+          <audio
+            ref={remoteAudioRef}
+            autoPlay
+            playsInline
+            controls
+            style={{ display: "none" }}
+          />
           {callDuration > 0 && (
             <div
               className="absolute bottom-20 right-5 text-white bg-success font-bold bg-opacity-90 px-4 py-2 rounded cursor-pointer flex items-center gap-3 shadow-lg"

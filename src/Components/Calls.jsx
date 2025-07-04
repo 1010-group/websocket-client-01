@@ -28,8 +28,16 @@ const Calls = ({ selectedUser, currentUser }) => {
     localStreamRef.current = stream;
 
     const peer = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        {
+          urls: 'turn:relay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
+      ]
     });
+
     peerRef.current = peer;
 
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
@@ -45,8 +53,12 @@ const Calls = ({ selectedUser, currentUser }) => {
 
     peer.ontrack = (event) => {
       const remoteAudio = document.getElementById('remote_audio');
-      if (remoteAudio) remoteAudio.srcObject = event.streams[0];
+      if (remoteAudio && event.streams[0]) {
+        remoteAudio.srcObject = event.streams[0];
+        remoteAudio.play().catch((e) => console.log("play error:", e));
+      }
     };
+
 
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
