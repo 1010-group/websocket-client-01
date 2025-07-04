@@ -1,4 +1,4 @@
-// ===== App.jsx =====
+// ===== App.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -78,12 +78,18 @@ const App = () => {
     const peer = new RTCPeerConnection({
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:global.stun.twilio.com:3478" },
         {
-          urls: "turn:relay.metered.ca:443",
-          username: "openrelayproject",
-          credential: "openrelayproject",
+          urls: "turn:turn.xirsys.com:3478?transport=udp",
+          username: "bekzodmirzaaliyev27Gmail.com",
+          credential: "6862442"
         },
-      ],
+        {
+          urls: "turn:turn.xirsys.com:3478?transport=tcp",
+          username: "bekzodmirzaaliyev27Gmail.com",
+          credential: "6862442"
+        }
+      ]
     });
     peerRef.current = peer;
 

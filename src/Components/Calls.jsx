@@ -1,3 +1,4 @@
+// ===== Calls.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from 'react';
 import { IoIosCall } from 'react-icons/io';
 import { MdCallEnd } from 'react-icons/md';
@@ -30,10 +31,16 @@ const Calls = ({ selectedUser, currentUser }) => {
     const peer = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
         {
-          urls: 'turn:relay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
+          urls: 'turn:turn.xirsys.com:3478?transport=udp',
+          username: 'bekzodmirzaaliyev27Gmail.com',
+          credential: '6862442'
+        },
+        {
+          urls: 'turn:turn.xirsys.com:3478?transport=tcp',
+          username: 'bekzodmirzaaliyev27Gmail.com',
+          credential: '6862442'
         }
       ]
     });
@@ -59,7 +66,6 @@ const Calls = ({ selectedUser, currentUser }) => {
       }
     };
 
-
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
 
@@ -78,7 +84,8 @@ const Calls = ({ selectedUser, currentUser }) => {
   const endCall = () => {
     peerRef.current?.close();
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    socket.emit('end_call', { targetId: selectedUser?.socketId });
+    const target = onlineUsers.find((u) => u._id === selectedUser._id);
+    socket.emit('end_call', { targetId: target?.socketId });
     setIsCalling(false);
     setStatusText('Calling...');
     document.getElementById('my_modal_call')?.close();
