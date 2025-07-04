@@ -1,3 +1,4 @@
+// ===== App.jsx =====
 import React, { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,7 +19,6 @@ const App = () => {
   const [callDuration, setCallDuration] = useState(0);
   const callIntervalRef = useRef(null);
 
-  // Timer format helper
   const formatTime = (sec) => {
     const m = String(Math.floor(sec / 60)).padStart(2, "0");
     const s = String(sec % 60).padStart(2, "0");
@@ -76,20 +76,10 @@ const App = () => {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         {
-          urls: "turn:global.relay.metered.ca:80",
-          username: "openai",
-          credential: "openai"
-        },
-        {
-          urls: "turn:global.relay.metered.ca:443",
-          username: "openai",
-          credential: "openai"
-        },
-        {
-          urls: "turn:global.relay.metered.ca:443?transport=tcp",
-          username: "openai",
-          credential: "openai"
-        },
+          urls: "turn:openrelay.metered.ca:443",
+          username: "openrelayproject",
+          credential: "openrelayproject"
+        }
       ]
     });
     peerRef.current = peer;
@@ -106,7 +96,10 @@ const App = () => {
     };
 
     peer.ontrack = (event) => {
-      remoteAudioRef.current.srcObject = event.streams[0];
+      if (remoteAudioRef.current && event.streams[0]) {
+        remoteAudioRef.current.srcObject = event.streams[0];
+        remoteAudioRef.current.play().catch((e) => console.log("play error:", e));
+      }
     };
 
     await peer.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
@@ -121,7 +114,6 @@ const App = () => {
     dispatch(clearIncomingCall());
     document.getElementById("incoming_call_modal")?.close();
 
-    // Start timer
     callIntervalRef.current = setInterval(() => {
       setCallDuration((prev) => prev + 1);
     }, 1000);
@@ -141,11 +133,7 @@ const App = () => {
         <Navbar />
         <div className="flex-1 bg-base-100 flex justify-center items-center relative">
           <Outlet />
-
-          {/* Hidden audio element */}
           <audio ref={remoteAudioRef} autoPlay playsInline hidden />
-
-          {/* Call duration timer */}
           {callDuration > 0 && (
             <div
               className="absolute bottom-20 right-5 text-white bg-success font-bold bg-opacity-90 px-4 py-2 rounded cursor-pointer flex items-center gap-3 shadow-lg"
@@ -156,7 +144,7 @@ const App = () => {
                 className="ml-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
                 onClick={() => {
                   socket.emit("end_call", {
-                    targetId: peerRef.current?.remoteSocketId, // bu joyda remote socket id bo‘lishi kerak
+                    targetId: incomingCall?.from,
                   });
                   cleanupCall();
                 }}
@@ -165,16 +153,15 @@ const App = () => {
               </button>
             </div>
           )}
-
         </div>
       </div>
 
-      {/* Modal */}
       {incomingCall && (
         <IncomingCallModal
           caller={incomingCall.caller}
           onAccept={handleAccept}
           onReject={handleReject}
+          callDuration={callDuration}
         />
       )}
     </div>
