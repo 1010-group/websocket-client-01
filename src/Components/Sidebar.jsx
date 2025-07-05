@@ -45,6 +45,12 @@ const Sidebar = () => {
     setSelectedModalUser(malumot);
     document.getElementById('my_modal_1').showModal();
   };
+  const handleKick = () => {
+    socket.emit("kick_user", {
+      userId: user._id,
+      selectedModalUser: user._id,
+    });
+  };
 
   const handleCopy = async (phone) => {
     if (phone) {
@@ -114,42 +120,61 @@ const Sidebar = () => {
     }
   };
 
-  const handleBan = (SelectedId) => {
-    const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
-    socket.emit('ban_user', { userId: user._id, SelectedId, reason });
-    socket.once('ban_result', (data) => {
+  const handleBan = (userId, selectedId, reason) => {
+    socket.emit("ban_user", { userId, selectedId, reason });
+
+    socket.once("ban_result", (data) => {
       if (!data.success) {
-        toast.error(data.message);
+        toast.error(data.message || "Ошибка при блокировке");
         return;
       }
 
-      if (data.success) {
-        toast.success(data.message)
-      }
+      toast.success(`Пользователь ${data.user.username} успешно заблокирован.`);
 
-      setSelectedModalUser(data.user);
+      setSelectedModalUser((prev) =>
+        prev && prev._id === data.user._id ? { ...prev, isBanned: true } : prev
+      );
+
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
-      );
-      setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
+        prev.map((u) =>
+          u._id === data.user._id ? { ...u, isBanned: true } : u
+        )
       );
 
-    });
-    socket.once("personal_message", (data) => {
-      console.log("DATA: ", data.message)
-      if (data?.type === "warning") {
-        toast.warn(data.message);
-        dispatch(logout())
+      setFilteredUsers((prev) =>
+        prev.map((u) =>
+          u._id === data.user._id ? { ...u, isBanned: true } : u
+        )
+      );
+
+      if (data.user._id === user._id) {
+        toast.error("Вы были заблокированы.");
+        dispatch(logout()); 
+        navigate('/login');
       }
-    })
+    });
   };
 
   const makeAdmin = (userId, selectedId, role) => {
-    if (!['admin', 'moderator', 'user'].includes(role)) return;
+    if (!['owner', 'admin', 'moderator', 'user'].includes(role)) return;
     setIsChangingRole(true);
     socket.emit('make_admin', { userId, SelectedId: selectedId, role });
   };
+  const handleMuteToggle = () => {
+    if (selectedModalUser.isMuted) {
+      socket.emit("unmute_admin", {
+        userID: user._id,
+        selectedUser: selectedModalUser._id,
+      });
+    } else {
+      socket.emit("mute_admin", {
+        userID: user._id,
+        selectedUser: selectedModalUser._id,
+        reason: "Noma'lum sabab",
+      });
+    }
+  };
+
 
   const handleMute = async (userID, selectedUser, reason) => {
     try {
@@ -336,7 +361,7 @@ const Sidebar = () => {
                       <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
                       <img
                         src="https://img.pikbest.com/origin/09/26/93/60DpIkbEsTGF9.png!sw800"
-                        className="size-12 absolute -top-5 -right-5"
+                        className="size-12 absolute -top-10 -right-7"
                         alt=""
                       />
                     </>
@@ -421,14 +446,30 @@ const Sidebar = () => {
                     <div className="flex flex-wrap w-full flex-1 gap-2">
                       <button
                         className="btn btn-soft btn-error m-1"
-                        onClick={() => handleBan(selectedModalUser?._id)}
+                        onClick={() => handleBan(user._id, selectedModalUser?._id, "Noma'lum sabab")}
                         disabled={selectedModalUser?.isBanned || selectedModalUser?.role === 'owner'}
                       >
-                        Заблокировать
+                        Ban
                       </button>
-                      <button className="btn btn-soft btn-error m-1" onClick={() => handleMute(user._id, selectedModalUser._id, "gey")}>
-                        Mute
+                      <button onClick={handleKick()} className="btn btn-soft btn-error m-1">
+                        Kick
                       </button>
+
+                      <button
+                        className={`btn btn-soft m-1 ${selectedModalUser?.isMuted ? 'btn-success' : 'btn-error'
+                          }`}
+                        onClick={() =>
+                          selectedModalUser?.isMuted
+                            ? socket.emit("unmute_admin", {
+                              userID: user._id,
+                              selectedUser: selectedModalUser._id,
+                            })
+                            : handleMute(user._id, selectedModalUser._id, "gey")
+                        }
+                      >
+                        {selectedModalUser?.isMuted ? 'Unmute' : 'Mute'}
+                      </button>
+
                       {!selectedModalUser?.isBanned && (
                         <button
                           className="btn btn-soft btn-error m-1"
@@ -448,7 +489,7 @@ const Sidebar = () => {
                       <div className="flex justify-center flex-col items-center w-full py-5">
                         <p className="w-full px-3 mb-2">Роль:</p>
                         <div role="tablist" className="tabs tabs-box">
-                          {['admin', 'moderator', 'user'].map((role) => (
+                          {['owner', 'admin', 'moderator', 'user'].map((role) => (
                             <p
                               key={role}
                               role="tab"
@@ -469,7 +510,7 @@ const Sidebar = () => {
                               }}
                               disabled={selectedModalUser?.role === 'owner' || isChangingRole}
                             >
-                              {role === 'admin' ? 'Администратор' : role === 'moderator' ? 'Модератор' : 'Пользователь'}
+                              {role === 'owner' ? 'Owner' : role === 'admin' ? 'Admin' : role === 'moderator' ? 'Moderator' : 'User'}
                             </p>
                           ))}
                         </div>
@@ -487,4 +528,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default Sidebar; 

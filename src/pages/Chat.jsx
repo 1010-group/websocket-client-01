@@ -4,16 +4,15 @@ import socket from '../socket';
 import moment from 'moment';
 import { IoSendSharp } from 'react-icons/io5';
 
+
 const Chat = () => {
   const currentUser = useSelector((state) => state.auth.user);
   const selectedUser = useSelector((state) => state.selectChat.selectedUser);
-  console.log("{REDUX}: ", currentUser)
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
 
   const dispatch = useDispatch();
-
 
   useEffect(() => {
     if (!selectedUser || !currentUser) return;
@@ -32,11 +31,11 @@ const Chat = () => {
 
   useEffect(() => {
     socket.on("mute_oluvchi_result", (data) => {
-      console.log("oluvchi:", data)
-      dispatch(login(data))
-      console.log("currentuser: ", currentUser)
-    })
-  }, [])
+      console.log("oluvchi:", data);
+      dispatch(login(data));
+      console.log("currentuser: ", currentUser);
+    });
+  }, []);
 
   useEffect(() => {
     const receiveMessage = (data) => {
@@ -94,6 +93,20 @@ const Chat = () => {
     });
   };
 
+  const handleFileSelect = (file) => {
+    if (file) {
+      console.log('Selected file:', file);
+      const fileData = {
+        from: currentUser._id,
+        to: selectedUser._id,
+        file: file.name,
+        timestamp: new Date(),
+      };
+      socket.emit('send_file', fileData);
+      setChatMessages((prev) => [...prev, { ...fileData, text: `File: ${file.name}` }]);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-base-100 flex-1">
       <div className="bg-base-200 h-[10%] p-4 shadow mb-2">
@@ -146,6 +159,7 @@ const Chat = () => {
                   : 'bg-[#020024] bg-gradient-to-r from-[rgba(2,0,36,1)] via-[rgba(9,9,121,1)] to-[rgba(0,212,255,1)] text-white'
                   }`}
               >
+                {msg.textեն}
                 {msg.text}
               </span>
               <div className={`text-xs ${msg.from === currentUser._id ? 'flex items-center gap-4 justify-end' : 'flex items-center gap-4 justify-start'}`}>
