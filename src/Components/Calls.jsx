@@ -1,4 +1,3 @@
-// ===== Calls.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from 'react';
 import { IoIosCall } from 'react-icons/io';
 import { MdCallEnd } from 'react-icons/md';
@@ -119,9 +118,11 @@ const Calls = ({ selectedUser, currentUser }) => {
 
   return (
     <div>
-      <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}>
-        <IoIosCall />
-      </button>
+      {selectedUser && (
+        <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}>
+          <IoIosCall />
+        </button>
+      )}
 
       <dialog id="my_modal_call" className="modal">
         <div className="modal-box w-full max-w-md">
