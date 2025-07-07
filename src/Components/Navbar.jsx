@@ -83,6 +83,7 @@ const Navbar = () => {
         };
         fetchNotifications();
     }, [user]);
+    
     useEffect(() => {
         socket.on("admin_result", (data) => {
             if (data.success) {
