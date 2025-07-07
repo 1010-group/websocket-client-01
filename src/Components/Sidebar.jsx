@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setSelectedUser } from '../redux/slices/selectedUser';
 import socket from '../socket';
-import { FaPhoneSquareAlt } from 'react-icons/fa';
+import { FaPhoneSquareAlt, FaGamepad, FaShoppingCart } from 'react-icons/fa';
 import { BsFillCalendarDateFill } from 'react-icons/bs';
 import { toast } from 'react-toastify';
 import { MdOutlineDriveFileRenameOutline } from 'react-icons/md';
@@ -25,6 +25,7 @@ const Sidebar = () => {
     if (!searchTerm) {
       setFilteredUsers(onlineUsers);
       return;
+      
     }
     const filtered = onlineUsers.filter((u) =>
       u.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -56,6 +57,7 @@ const Sidebar = () => {
         console.error('Ошибка копирования:', err);
         toast.error('Ошибка копирования номера');
       }
+      
     }
   };
 
@@ -283,7 +285,26 @@ const Sidebar = () => {
 
   return (
     <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
-      <h2 className="text-xl font-bold mb-4">Online Users</h2>
+    <div className="flex justify-between items-center mb-4 px-2">
+  <h2 className="text-xl font-bold">Online Users</h2>
+  <div className="flex gap-2">
+    <button
+      onClick={() => navigate("/game")}
+      className="btn btn-circle btn-sm btn-primary flex items-center justify-center"
+      title="Game"
+    >
+      <FaGamepad className="text-lg" />
+    </button>
+    <button
+      onClick={() => navigate("/shop")}
+      className="btn btn-circle btn-sm btn-secondary flex items-center justify-center"
+      title="Shop"
+    >
+      <FaShoppingCart className="text-lg" />
+    </button>
+  </div>
+</div>
+
       <label className="input mb-4 flex items-center gap-2 bg-base-200 rounded-full p-2 w-full shadow-md shadow-primary">
         <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
