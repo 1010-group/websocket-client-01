@@ -111,9 +111,14 @@ const Chat = () => {
 
   // Удалить у обоих
   const handleDeleteForBoth = () => {
+    if (!selectedUser || !currentUser) return;
+
     socket.emit('delete_message', {
       messageId: contextMenu.messageId,
+      from: currentUser._id,
+      to: selectedUser._id,
     });
+
     setContextMenu({ ...contextMenu, visible: false });
   };
 
@@ -213,7 +218,7 @@ const Chat = () => {
           className="bg-white border rounded shadow-md p-2 flex flex-col gap-2"
         >
           <button
-            className="hover:bg-gray-100 px-2 py-1 rounded text-left"
+            className="hover:bg-gray-100 px-2 py-1 rounded text-left text-red-500"
             onClick={handleDeleteLocal}
           >
             Удалить только у меня
@@ -225,7 +230,7 @@ const Chat = () => {
             Удалить у меня и у него
           </button>
           <button
-            className="hover:bg-gray-100 px-2 py-1 rounded text-left"
+            className="hover:bg-gray-100 px-2 py-1 rounded text-left text-red-500"
             onClick={() => setContextMenu({ ...contextMenu, visible: false })}
           >
             Отмена
