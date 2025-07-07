@@ -282,7 +282,7 @@ const Sidebar = () => {
   );
 
   return (
-    <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
+    <div className="flex-1 bg-base-300 overflow-y-auto p-2 h-screen flex-col  py-5">
       <h2 className="text-xl font-bold mb-4">Online Users</h2>
       <label className="input mb-4 flex items-center gap-2 bg-base-200 rounded-full p-2 w-full shadow-md shadow-primary">
         <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

@@ -1,9 +1,9 @@
-// ===== App.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import socket from "./socket";
 import Navbar from "./Components/Navbar";
+import NavbarBottom from "./Components/NavbarBottom"; // ✅ qo‘shildi
 import Sidebar from "./Components/Sidebar";
 import IncomingCallModal from "./Components/IncomingCallModal";
 import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
@@ -12,7 +12,6 @@ import { MdCallEnd } from "react-icons/md";
 const App = () => {
   const dispatch = useDispatch();
   const incomingCall = useSelector((state) => state.call.incomingCall);
-
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteAudioRef = useRef(null);
@@ -31,9 +30,7 @@ const App = () => {
       document.getElementById("incoming_call_modal")?.showModal();
     });
 
-    socket.on("call_ended", () => {
-      cleanupCall();
-    });
+    socket.on("call_ended", cleanupCall);
 
     socket.on("ice_candidate", ({ candidate }) => {
       if (peerRef.current) {
@@ -71,7 +68,6 @@ const App = () => {
 
   const handleAccept = async () => {
     if (!incomingCall) return;
-
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     localStreamRef.current = stream;
 
@@ -105,13 +101,9 @@ const App = () => {
     };
 
     peer.ontrack = (event) => {
-      console.log("📥 [ontrack] stream:", event.streams[0]);
       if (remoteAudioRef.current && event.streams[0]) {
         remoteAudioRef.current.srcObject = event.streams[0];
-        remoteAudioRef.current
-          .play()
-          .then(() => console.log("🔊 Playing remote stream"))
-          .catch((e) => console.error("🔇 Play error:", e));
+        remoteAudioRef.current.play().catch((e) => console.error("Play error:", e));
       }
     };
 
@@ -140,31 +132,27 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex flex-col w-9/12">
-        <Navbar />
+    <div className="flex flex-col lg:flex-row h-screen">
+      <div className="w-full lg:w-3/12 border-r border-base-300">
+        <Sidebar />
+      </div>
+      <div className="w-full lg:w-9/12 flex flex-col">
+        {/* ✅ lg:dan katta ekranlar uchun */}
+        <div className="hidden lg:block">
+          <Navbar />
+        </div>
+
         <div className="flex-1 bg-base-100 flex justify-center items-center relative">
           <Outlet />
-          <audio
-            ref={remoteAudioRef}
-            autoPlay
-            playsInline
-            controls
-            style={{ display: "none" }}
-          />
+          <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
+
           {callDuration > 0 && (
-            <div
-              className="absolute bottom-20 right-5 text-white bg-success font-bold bg-opacity-90 px-4 py-2 rounded cursor-pointer flex items-center gap-3 shadow-lg"
-              title="Tugash uchun bosing"
-            >
+            <div className="absolute bottom-20 right-5 text-white bg-success font-bold bg-opacity-90 px-4 py-2 rounded flex items-center gap-3 shadow-lg">
               ⏱ {formatTime(callDuration)}
               <button
                 className="ml-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
                 onClick={() => {
-                  socket.emit("end_call", {
-                    targetId: incomingCall?.from,
-                  });
+                  socket.emit("end_call", { targetId: incomingCall?.from });
                   cleanupCall();
                 }}
               >
@@ -174,6 +162,9 @@ const App = () => {
           )}
         </div>
       </div>
+
+      {/* ✅ faqat mobil uchun: */}
+      <NavbarBottom />
 
       {incomingCall && (
         <IncomingCallModal
