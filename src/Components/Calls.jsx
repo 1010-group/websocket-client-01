@@ -6,8 +6,9 @@ import socket from '../socket';
 import { setStatus } from '../redux/slices/callSlice';
 
 // Ovoz fayllarini import qilish (fayllar assets/mp3/ da)
-import manabuSound from '../assets/manabu.mp3'; // Qo‘ng‘iroq ovozi
-import notAnsweredSound from '../assets/manabu.mp3'; // Foydalanuvchi javob bermasa ovoz
+import manabuSound from '../assets/mp3/manabu.mp3'; // Qo‘ng‘iroq ovozi
+import callsuserSound from '../assets/mp3/callsuser.mp3'; // Foydalanuvchi online bo‘lsa ovoz
+import notAnsweredSound from '../assets/mp3/notanswered.mp3'; // Foydalanuvchi javob bermasa ovoz
 
 const Calls = ({ selectedUser, currentUser }) => {
   const dispatch = useDispatch();
@@ -40,7 +41,8 @@ const Calls = ({ selectedUser, currentUser }) => {
     setStatusText('Calling...');
     document.getElementById('my_modal_call')?.showModal();
 
-    playSound(manabuSound); // Online bo‘lsa bu ovoz ijro etiladi
+    playSound(manabuSound); // Qo‘ng‘iroq boshlanganda manabu ovoz
+    playSound(callsuserSound); // Foydalanuvchi online bo‘lsa bu ovoz ijro etiladi
 
     const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     localStreamRef.current = stream;
