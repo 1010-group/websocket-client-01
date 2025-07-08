@@ -6,9 +6,9 @@ import socket from '../socket';
 import { setStatus } from '../redux/slices/callSlice';
 
 // Ovoz fayllarini import qilish (fayllar assets/mp3/ da)
-import manabuSound from '../assets/mp3/manabu.mp3'; // Qo‘ng‘iroq ovozi
-import callsuserSound from '../assets/mp3/callsuser.mp3'; // Foydalanuvchi online bo‘lsa ovoz
-import notAnsweredSound from '../assets/mp3/notanswered.mp3'; // Foydalanuvchi javob bermasa ovoz
+import manabuSound from '../assets/manabu.mp3'; // Qo‘ng‘iroq ovozi
+import callsuserSound from '../assets/callsuser.mp3'; // Foydalanuvchi online bo‘lsa ovoz
+import endcallsSound from '../assets/endcalls.mp3'; // Foydalanuvchi javob bermasa yoki qo‘ng‘iroq tugaganda ovoz
 
 const Calls = ({ selectedUser, currentUser }) => {
   const dispatch = useDispatch();
@@ -29,11 +29,18 @@ const Calls = ({ selectedUser, currentUser }) => {
     }
   };
 
+  // Play endcalls sound if no user is selected
+  useEffect(() => {
+    if (!selectedUser && !currentUser) {
+      playSound(endcallsSound);
+    }
+  }, [selectedUser, currentUser]);
+
   const handleCall = async () => {
     const target = onlineUsers.find((u) => u._id === selectedUser._id);
     if (!target?.socketId) {
       alert('❌ Foydalanuvchi offline yoki socketId yo‘q.');
-      playSound(notAnsweredSound); // Offline bo‘lsa bu ovoz ijro etiladi
+      playSound(endcallsSound); // Offline bo‘lsa bu ovoz ijro etiladi
       return;
     }
 
@@ -112,6 +119,7 @@ const Calls = ({ selectedUser, currentUser }) => {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
+    playSound(endcallsSound); // Play end call sound when the call ends
   };
 
   useEffect(() => {
