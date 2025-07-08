@@ -22,6 +22,7 @@ const Sidebar = () => {
   const [copied, setCopied] = useState(false);
 
 
+
   const handleSearch = (searchTerm) => {
     if (!searchTerm) {
       setFilteredUsers(onlineUsers);
@@ -45,6 +46,7 @@ const Sidebar = () => {
   const handleOpenModal = (malumot) => {
     setSelectedModalUser(malumot);
     document.getElementById('my_modal_1').showModal();
+
   };
 
   const handleKick = (fromID, toID) => {
@@ -105,6 +107,28 @@ const Sidebar = () => {
     });
   };
 
+  const handleDelete = async (userId) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/delete/${userId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || 'Ошибка удаления пользователя');
+        return;
+      }
+      toast.success('Пользователь успешно удален');
+      setSelectedModalUser(null);
+      setOnlineUsers((prev) => prev.filter((u) => u._id !== userId));
+      setFilteredUsers((prev) => prev.filter((u) => u._id !== userId));
+
+    } catch (error) {
+      console.error(error);
+      toast.error('Ошибка удаления пользователя');
+    }
+  };
+
   const handleUnban = async (userId) => {
     try {
       const res = await fetch(`http://localhost:5000/api/users/unban/${userId}`, {
@@ -148,6 +172,7 @@ const Sidebar = () => {
       socket.off("admin_result");
     };
   }, []);
+
 
 
   const handleBan = (userId, selectedId, reason) => {
@@ -377,6 +402,7 @@ const Sidebar = () => {
         isChangingRole={isChangingRole}
         copied={copied}
         setCopied={setCopied}
+        handleDelete={handleDelete}
       />
     </div>
   );

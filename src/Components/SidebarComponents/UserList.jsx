@@ -10,7 +10,7 @@ const UserList = ({ user, currentUser, onOpenChat, onOpenModal }) => {
                 <img
                     className="w-12 h-12 rounded-full"
                     src={user.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'}
-                    alt={user.username}
+                    alt=""
                 />
             </button>
             <div>

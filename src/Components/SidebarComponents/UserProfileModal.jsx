@@ -16,7 +16,8 @@ const UserProfileModal = ({
     onWarn,
     onUnban,
     onMakeAdmin,
-    isChangingRole
+    isChangingRole,
+    handleDelete
 }) => {
     return (
         <dialog id="my_modal_1" className="modal">
@@ -90,6 +91,7 @@ const UserProfileModal = ({
                                                 type="button"
                                                 className="btn btn-soft btn-success m-1 w-1/4 "
                                                 onClick={() => onUnban(selectedModalUser._id)}
+                                                disabled={selectedModalUser?.role === 'owner'}
                                             >
                                                 Unban
                                             </button>
@@ -110,6 +112,7 @@ const UserProfileModal = ({
                                                 type="button"
                                                 className="btn btn-soft btn-success m-1 w-1/4"
                                                 onClick={onUnmute}
+                                                disabled={selectedModalUser?.role === 'owner'}
                                             >
                                                 Unmute
                                             </button>
@@ -118,6 +121,7 @@ const UserProfileModal = ({
                                                 type="button"
                                                 className="btn btn-soft btn-error m-1 w-1/4"
                                                 onClick={() => onMute(currentUser._id, selectedModalUser?._id, 'mute')}
+                                                disabled={selectedModalUser?.role === 'owner'}
                                             >
                                                 Mute
                                             </button>
@@ -128,6 +132,7 @@ const UserProfileModal = ({
                                             type="button"
                                             onClick={() => onKick(currentUser._id, selectedModalUser?._id)}
                                             className="btn btn-soft btn-error m-1 w-1/4"
+                                            disabled={selectedModalUser?.role === 'owner'}
                                         >
                                             Kick
                                         </button>
@@ -141,6 +146,16 @@ const UserProfileModal = ({
                                                 disabled={selectedModalUser?.role === 'owner'}
                                             >
                                                 Warning ({selectedModalUser?.isWarn || 0}/3)
+                                            </button>
+                                        )}
+                                        {currentUser?.role === "owner" && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-soft btn-error m-1 w-1/4"
+                                                onClick={() => handleDelete(selectedModalUser._id)}
+                                                disabled={selectedModalUser?.role === 'owner'}
+                                            >
+                                                Delete
                                             </button>
                                         )}
                                     </div>
