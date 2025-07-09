@@ -11,14 +11,12 @@ import { MdCallEnd } from "react-icons/md";
 const App = () => {
   const dispatch = useDispatch();
   const incomingCall = useSelector((state) => state.call.incomingCall);
-
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const [callDuration, setCallDuration] = useState(0);
   const callIntervalRef = useRef(null);
 
-  // Timer format helper
   const formatTime = (sec) => {
     const m = String(Math.floor(sec / 60)).padStart(2, "0");
     const s = String(sec % 60).padStart(2, "0");
@@ -31,9 +29,7 @@ const App = () => {
       document.getElementById("incoming_call_modal")?.showModal();
     });
 
-    socket.on("call_ended", () => {
-      cleanupCall();
-    });
+    socket.on("call_ended", cleanupCall);
 
     socket.on("ice_candidate", ({ candidate }) => {
       if (peerRef.current) {
@@ -59,7 +55,10 @@ const App = () => {
     peerRef.current = null;
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
-    remoteAudioRef.current.srcObject = null;
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.pause();
+      remoteAudioRef.current.srcObject = null;
+    }
     clearInterval(callIntervalRef.current);
     setCallDuration(0);
     dispatch(clearIncomingCall());
@@ -68,28 +67,23 @@ const App = () => {
 
   const handleAccept = async () => {
     if (!incomingCall) return;
-
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     localStreamRef.current = stream;
 
     const peer = new RTCPeerConnection({
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:global.stun.twilio.com:3478" },
         {
-          urls: "turn:global.relay.metered.ca:80",
-          username: "openai",
-          credential: "openai"
+          urls: "turn:turn.xirsys.com:3478?transport=udp",
+          username: "bekzodmirzaaliyev27Gmail.com",
+          credential: "6862442"
         },
         {
-          urls: "turn:global.relay.metered.ca:443",
-          username: "openai",
-          credential: "openai"
-        },
-        {
-          urls: "turn:global.relay.metered.ca:443?transport=tcp",
-          username: "openai",
-          credential: "openai"
-        },
+          urls: "turn:turn.xirsys.com:3478?transport=tcp",
+          username: "bekzodmirzaaliyev27Gmail.com",
+          credential: "6862442"
+        }
       ]
     });
     peerRef.current = peer;
@@ -106,7 +100,10 @@ const App = () => {
     };
 
     peer.ontrack = (event) => {
-      remoteAudioRef.current.srcObject = event.streams[0];
+      if (remoteAudioRef.current && event.streams[0]) {
+        remoteAudioRef.current.srcObject = event.streams[0];
+        remoteAudioRef.current.play().catch((e) => console.error("Play error:", e));
+      }
     };
 
     await peer.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
@@ -121,7 +118,6 @@ const App = () => {
     dispatch(clearIncomingCall());
     document.getElementById("incoming_call_modal")?.close();
 
-    // Start timer
     callIntervalRef.current = setInterval(() => {
       setCallDuration((prev) => prev + 1);
     }, 1000);
@@ -135,29 +131,27 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex flex-col w-9/12">
-        <Navbar />
+    <div className="flex flex-col lg:flex-row h-screen">
+      <div className="w-full lg:w-3/12 border-r border-base-300">
+        <Sidebar />
+      </div>
+      <div className="w-full lg:w-9/12 flex flex-col">
+        {/* ✅ lg:dan katta ekranlar uchun */}
+        <div className="hidden lg:block">
+          <Navbar />
+        </div>
+
         <div className="flex-1 bg-base-100 flex justify-center items-center relative">
           <Outlet />
+          <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
 
-          {/* Hidden audio element */}
-          <audio ref={remoteAudioRef} autoPlay playsInline hidden />
-
-          {/* Call duration timer */}
           {callDuration > 0 && (
-            <div
-              className="absolute bottom-20 right-5 text-white bg-success font-bold bg-opacity-90 px-4 py-2 rounded cursor-pointer flex items-center gap-3 shadow-lg"
-              title="Tugash uchun bosing"
-            >
+            <div className="absolute bottom-20 right-5 text-white bg-success font-bold bg-opacity-90 px-4 py-2 rounded flex items-center gap-3 shadow-lg">
               ⏱ {formatTime(callDuration)}
               <button
                 className="ml-2 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
                 onClick={() => {
-                  socket.emit("end_call", {
-                    targetId: peerRef.current?.remoteSocketId, // bu joyda remote socket id bo‘lishi kerak
-                  });
+                  socket.emit("end_call", { targetId: incomingCall?.from });
                   cleanupCall();
                 }}
               >
@@ -165,16 +159,17 @@ const App = () => {
               </button>
             </div>
           )}
-
         </div>
       </div>
 
-      {/* Modal */}
+      
+
       {incomingCall && (
         <IncomingCallModal
           caller={incomingCall.caller}
           onAccept={handleAccept}
           onReject={handleReject}
+          callDuration={callDuration}
         />
       )}
     </div>

@@ -1,3 +1,4 @@
+// ===== Calls.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from 'react';
 import { IoIosCall } from 'react-icons/io';
 import { MdCallEnd } from 'react-icons/md';
@@ -28,8 +29,22 @@ const Calls = ({ selectedUser, currentUser }) => {
     localStreamRef.current = stream;
 
     const peer = new RTCPeerConnection({
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
+        {
+          urls: 'turn:turn.xirsys.com:3478?transport=udp',
+          username: 'bekzodmirzaaliyev27Gmail.com',
+          credential: '6862442'
+        },
+        {
+          urls: 'turn:turn.xirsys.com:3478?transport=tcp',
+          username: 'bekzodmirzaaliyev27Gmail.com',
+          credential: '6862442'
+        }
+      ]
     });
+
     peerRef.current = peer;
 
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
@@ -45,7 +60,10 @@ const Calls = ({ selectedUser, currentUser }) => {
 
     peer.ontrack = (event) => {
       const remoteAudio = document.getElementById('remote_audio');
-      if (remoteAudio) remoteAudio.srcObject = event.streams[0];
+      if (remoteAudio && event.streams[0]) {
+        remoteAudio.srcObject = event.streams[0];
+        remoteAudio.play().catch((e) => console.log("play error:", e));
+      }
     };
 
     const offer = await peer.createOffer();
@@ -66,7 +84,8 @@ const Calls = ({ selectedUser, currentUser }) => {
   const endCall = () => {
     peerRef.current?.close();
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    socket.emit('end_call', { targetId: selectedUser?.socketId });
+    const target = onlineUsers.find((u) => u._id === selectedUser._id);
+    socket.emit('end_call', { targetId: target?.socketId });
     setIsCalling(false);
     setStatusText('Calling...');
     document.getElementById('my_modal_call')?.close();

@@ -107,27 +107,25 @@ const Sidebar = () => {
     });
   };
 
-  const handleDelete = async (userId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/users/delete/${userId}`, {
-        method: 'DELETE',
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || 'Ошибка удаления пользователя');
-        return;
-      }
-      toast.success('Пользователь успешно удален');
-      setSelectedModalUser(null);
-      setOnlineUsers((prev) => prev.filter((u) => u._id !== userId));
-      setFilteredUsers((prev) => prev.filter((u) => u._id !== userId));
-
-    } catch (error) {
-      console.error(error);
-      toast.error('Ошибка удаления пользователя');
-    }
+  const handleDelete = (userId) => {
+    socket.emit("delete_user", userId);
   };
+
+  useEffect(() => {
+    socket.on("delete_user_result", (data) => {
+      if (data.success) {
+        toast.success(data.message);
+        document.getElementById("my_modal_1")?.close();
+      } else {
+        toast.error(data.message);
+      }
+    });
+
+    return () => {
+      socket.off("delete_user_result");
+    };
+  }, []);
+
 
   const handleUnban = async (userId) => {
     try {
@@ -365,7 +363,7 @@ const Sidebar = () => {
 
 
   return (
-    <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
+    <div className="flex-1 bg-base-300 overflow-y-auto p-2 h-screen flex-col  py-5">
       <h2 className="text-xl font-bold mb-4">Online Users</h2>
       <SearchBar onSearch={handleSearch} />
       <div className="flex items-center gap-1 justify-center flex-col w-full flex-1 cursor-pointer">
