@@ -84,7 +84,6 @@ const Chat = () => {
     };
 
     socket.emit('send_message', msgData);
-    setChatMessages((prev) => [...prev, msgData]);
     setMessage('');
   };
 
