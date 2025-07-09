@@ -3,24 +3,25 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setSelectedUser } from '../redux/slices/selectedUser';
 import socket from '../socket';
-import { FaPhoneSquareAlt } from 'react-icons/fa';
-import { BsFillCalendarDateFill } from 'react-icons/bs';
 import { toast } from 'react-toastify';
-import { MdOutlineDriveFileRenameOutline } from 'react-icons/md';
 import { logout } from '../redux/slices/authSlice';
 import { setOnlineUsers } from "../redux/slices/onlineUsers";
+import SearchBar from './SidebarComponents/SearchBar';
+import UserProfileModal from './SidebarComponents/UserProfileModal';
+import UserList from './SidebarComponents/UserList';
 
 const Sidebar = () => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // const [onlineUsers, setOnlineUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedModalUser, setSelectedModalUser] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [isChangingRole, setIsChangingRole] = useState(false);
   const onlineUsers = useSelector(state => state?.onlineUsers?.onlineUsers);
+  const [copied, setCopied] = useState(false);
+
+
   const handleSearch = (searchTerm) => {
     if (!searchTerm) {
       setFilteredUsers(onlineUsers);
@@ -46,18 +47,34 @@ const Sidebar = () => {
     document.getElementById('my_modal_1').showModal();
   };
 
-  const handleCopy = async (phone) => {
-    if (phone) {
-      try {
-        await navigator.clipboard.writeText(phone);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-        console.error('Ошибка копирования:', err);
-        toast.error('Ошибка копирования номера');
+  const handleKick = (fromID, toID) => {
+    socket.emit("kick_user", {
+      userId: fromID,
+      selectedId: toID,
+    });
+
+    socket.once("kick_result", (data) => {
+      toast[data.success ? 'success' : 'error'](data.message);
+      if (data.success && toID === user._id) {
+        dispatch(logout());
+        navigate('/login');
       }
-    }
+    });
   };
+
+  useEffect(() => {
+    socket.on("kick_user", ({ message }) => {
+      toast.error(message || "Siz kick qilindingiz");
+      dispatch(logout());
+      navigate('/login');
+    });
+
+    return () => {
+      socket.off("kick_user");
+    };
+  }, []);
+
+
 
   const handleWarn = (userId) => {
     socket.emit('warn_user', { userId });
@@ -113,40 +130,63 @@ const Sidebar = () => {
       toast.error('Ошибка разблокировки');
     }
   };
+  useEffect(() => {
+    socket.on("admin_result", ({ success, message, user }) => {
+      toast[success ? "success" : "error"](message);
+      if (success && user) {
+        setSelectedModalUser((prev) => (prev?._id === user._id ? user : prev));
+        setOnlineUsers((prev) =>
+          prev.map((u) => (u._id === user._id ? user : u))
+        );
+        setFilteredUsers((prev) =>
+          prev.map((u) => (u._id === user._id ? user : u))
+        );
+      }
+    });
 
-  const handleBan = (SelectedId) => {
-    const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
-    socket.emit('ban_user', { userId: user._id, SelectedId, reason });
-    socket.once('ban_result', (data) => {
+    return () => {
+      socket.off("admin_result");
+    };
+  }, []);
+
+
+  const handleBan = (userId, selectedId, reason) => {
+    socket.emit("ban_user", { userId, selectedId, reason });
+
+    socket.once("ban_result", (data) => {
       if (!data.success) {
-        toast.error(data.message);
+        toast.error(data.message || "Ошибка при блокировке");
         return;
       }
 
-      if (data.success) {
-        toast.success(data.message)
-      }
+      toast.success(`Пользователь ${data.user.username} успешно заблокирован.`);
 
-      setSelectedModalUser(data.user);
+      setSelectedModalUser((prev) =>
+        prev && prev._id === data.user._id ? { ...prev, isBanned: true } : prev
+      );
+
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
-      );
-      setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
+        prev.map((u) =>
+          u._id === data.user._id ? { ...u, isBanned: true } : u
+        )
       );
 
-    });
-    socket.once("personal_message", (data) => {
-      console.log("DATA: ", data.message)
-      if (data?.type === "warning") {
-        toast.warn(data.message);
-        dispatch(logout())
+      setFilteredUsers((prev) =>
+        prev.map((u) =>
+          u._id === data.user._id ? { ...u, isBanned: true } : u
+        )
+      );
+
+      if (data.user._id === user._id) {
+        toast.error("Вы были заблокированы.");
+        dispatch(logout());
+        navigate('/login');
       }
-    })
+    });
   };
 
   const makeAdmin = (userId, selectedId, role) => {
-    if (!['admin', 'moderator', 'user'].includes(role)) return;
+    if (!['owner', 'admin', 'moderator', 'user'].includes(role)) return;
     setIsChangingRole(true);
     socket.emit('make_admin', { userId, SelectedId: selectedId, role });
   };
@@ -161,14 +201,12 @@ const Sidebar = () => {
           return;
         }
 
-        // ✅ isMuted qiymatiga qarab toast chiqaramiz
         if (data.user.isMuted) {
           toast.success(`${data.user.username} muvaffaqiyatli mute qilindi.`);
         } else {
           toast.info(`${data.user.username} mute holatidan chiqarildi.`);
         }
 
-        // 🔄 UI holatini yangilash
         setSelectedModalUser((prev) =>
           prev?._id === data.user._id ? { ...prev, isMuted: data.user.isMuted } : prev
         );
@@ -185,7 +223,6 @@ const Sidebar = () => {
           )
         );
       });
-
     } catch (e) {
       console.error("WEBSOCKET ERROR: ", e);
       toast.error("Mute berishda xatolik yuz berdi");
@@ -196,9 +233,7 @@ const Sidebar = () => {
     if (onlineUsers.length > 0) {
       dispatch(setOnlineUsers(onlineUsers));
     }
-
-  }, [onlineUsers])
-
+  }, [onlineUsers, dispatch]);
 
   useEffect(() => {
     if (!user || !user._id) return;
@@ -218,7 +253,7 @@ const Sidebar = () => {
       const filtered = users.filter((u) => u._id !== user._id);
       setOnlineUsers(filtered);
       setFilteredUsers(filtered);
-      dispatch(setOnlineUsers(filtered)); // ✅ redux-toolkit bilan bu ishlaydi
+      dispatch(setOnlineUsers(filtered));
       setLoading(false);
     };
 
@@ -254,7 +289,7 @@ const Sidebar = () => {
       socket.off('admin_result', handleAdminResult);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [user]);
+  }, [user, dispatch]);
 
   useEffect(() => {
     if (user?._id) {
@@ -262,7 +297,6 @@ const Sidebar = () => {
 
       socket.on('warn_status', (data) => {
         if (data.isBanned) {
-          // toast.error('Your account is banned');
           socket.emit('user_left', user);
           dispatch(logout());
           navigate('/login');
@@ -281,23 +315,34 @@ const Sidebar = () => {
     b.status ? 1 : a.status ? -1 : 0
   );
 
+  const handleCopy = async (phone) => {
+    if (phone) {
+      try {
+        await navigator.clipboard.writeText(phone);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('Ошибка копирования:', err);
+        toast.error('Ошибка копирования номера');
+      }
+    }
+  };
+  const handleUnmute = () => {
+    if (!selectedModalUser || !user) return;
+    onMute(user._id, selectedModalUser._id, 'unmute');
+  };
+  const onMute = (fromID, toID, type) => {
+    socket.emit(type === 'unmute' ? 'unmute_admin' : 'mute_admin', {
+      userID: fromID,
+      selectedUser: toID,
+    });
+  };
+
+
   return (
     <div className="flex-1 bg-base-300 overflow-y-auto p-2 h-screen flex-col  py-5">
       <h2 className="text-xl font-bold mb-4">Online Users</h2>
-      <label className="input mb-4 flex items-center gap-2 bg-base-200 rounded-full p-2 w-full shadow-md shadow-primary">
-        <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </g>
-        </svg>
-        <input
-          type="search"
-          required
-          placeholder="Search"
-          onChange={(e) => handleSearch(e.target.value)}
-        />
-      </label>
+      <SearchBar onSearch={handleSearch} />
       <div className="flex items-center gap-1 justify-center flex-col w-full flex-1 cursor-pointer">
         {loading ? (
           <div className="flex justify-center items-center flex-1 h-8/10">
@@ -307,182 +352,32 @@ const Sidebar = () => {
           <p className="text-gray-400">No users online yet</p>
         ) : (
           sortedUsers.map((u) => (
-            <div
+            <UserList
               key={u._id}
-              className={`${u?.role === 'owner' ? 'shadow-md shadow-error animate-pulse' : ''} max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
-              onClick={() => handleOpenChat(u)}
-            >
-              <button onClick={(e) => { e.stopPropagation(); handleOpenModal(u); }}>
-                <img
-                  className="w-12 h-12 rounded-full"
-                  src={u.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'}
-                  alt={u.username}
-                />
-              </button>
-              <div>
-                <p className={`${u?.role === 'owner' ? 'text-error' : ''} font-semibold ${u?.role === 'owner' ? 'text-shadow-md text-shadow-error' : ''}`}>
-                  {u.username}
-                </p>
-                <p className={u.status ? 'text-success' : 'text-error'}>
-                  {u.status ? 'Online' : 'Offline'}
-                </p>
-              </div>
-              <div className="flex-1 text-end text-xs">
-                <div className="flex items-center gap-2 flex-1 justify-end relative">
-                  {u.isBanned ? (
-                    <span className="text-red-500 font-bold text-shadow-md text-shadow-error">Banned</span>
-                  ) : u?.role === 'owner' ? (
-                    <>
-                      <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
-                      <img
-                        src="https://img.pikbest.com/origin/09/26/93/60DpIkbEsTGF9.png!sw800"
-                        className="size-12 absolute -top-5 -right-5"
-                        alt=""
-                      />
-                    </>
-                  ) : u?.role === 'admin' ? (
-                    <span className="text-info/75 text-shadow-md text-shadow-info">Admin</span>
-                  ) : u?.role === 'moderator' ? (
-                    <span className="text-warning/75 text-shadow-md text-shadow-warning">Moderator</span>
-                  ) : null}
-                </div>
-              </div>
-            </div>
+              user={u}
+              currentUser={user}
+              onOpenChat={handleOpenChat}
+              onOpenModal={handleOpenModal}
+            />
           ))
         )}
       </div>
-      <dialog id="my_modal_1" className="modal">
-        <div className="modal-box flex mb-4 w-full">
-          <div className="modal-action flex-1 flex justify-center w-full">
-            <form method="dialog" className="w-full">
-              <div className="flex flex-col w-full gap-6 mb-4">
-                <div className="flex w-full gap-4 items-center">
-                  <img
-                    className="w-14 h-14 rounded-full border-2 border-cyan-600 shadow-cyan-600 shadow-2xl"
-                    src={
-                      selectedModalUser?.image ||
-                      'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
-                    }
-                    alt={selectedModalUser?.username}
-                  />
-                  <div className="flex flex-col items-center gap-2">
-                    <p className="font-bold text-lg flex gap-2 text-shadow-cyan-600 text-primary">
-                      <MdOutlineDriveFileRenameOutline className="text-primary text-2xl" />
-                      {selectedModalUser?.username || user?.username}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <div
-                        aria-label={selectedModalUser?.status ? 'success' : 'error'}
-                        className={selectedModalUser?.status ? 'status status-success' : 'status status-error'}
-                      ></div>
-                      <p
-                        className={
-                          selectedModalUser?.status
-                            ? 'text-success font-semibold text-shadow-success'
-                            : 'text-error font-semibold text-shadow-error'
-                        }
-                      >
-                        {selectedModalUser?.status ? 'Online' : 'Offline'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col w-full gap-4">
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 group duration-300">
-                    <div
-                      className="hidden group-hover:flex items-center gap-2 cursor-pointer duration-300"
-                      onClick={() => handleCopy(selectedModalUser?.phone || user?.phone)}
-                    >
-                      <div className="text-success text font-black duration-300">
-                        {copied ? 'Copied!' : 'Copy'}
-                      </div>
-                    </div>
-                    <FaPhoneSquareAlt className="text-success text-2xl" />
-                    <a href={`tel:${selectedModalUser?.phone || user?.phone}`} className="text-success">
-                      {selectedModalUser?.phone || user?.phone}
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BsFillCalendarDateFill className="inline-block text-secondary text-2xl" />
-                    <p className="text-secondary">
-                      {selectedModalUser?.birthDate || user?.birthDate
-                        ? new Date(selectedModalUser?.birthDate || user?.birthDate).toLocaleDateString('en-CA')
-                        : '-'}
-                    </p>
-                  </div>
-                </div>
-                {['admin', 'owner'].includes(user?.role) && (
-                  <div className="flex flex-col w-full gap-4">
-                    <p className="text-2xl text-accent font-semibold text-shadow-sm text-shadow-accent">
-                      Панель Администратора
-                    </p>
-                    <div className="flex flex-wrap w-full flex-1 gap-2">
-                      <button
-                        className="btn btn-soft btn-error m-1"
-                        onClick={() => handleBan(selectedModalUser?._id)}
-                        disabled={selectedModalUser?.isBanned || selectedModalUser?.role === 'owner'}
-                      >
-                        Заблокировать
-                      </button>
-                      <button className="btn btn-soft btn-error m-1" onClick={() => handleMute(user._id, selectedModalUser._id, "gey")}>
-                        Mute
-                      </button>
-                      {!selectedModalUser?.isBanned && (
-                        <button
-                          className="btn btn-soft btn-error m-1"
-                          onClick={() => handleWarn(selectedModalUser._id)}
-                          disabled={selectedModalUser?.role === 'owner'}
-                        >
-                          Warning ({selectedModalUser?.isWarn || 0}/3)
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-soft btn-success m-1"
-                        onClick={() => handleUnban(selectedModalUser._id)}
-                      // disabled={!selectedModalUser?.isBanned}
-                      >
-                        Unban
-                      </button>
-                      <div className="flex justify-center flex-col items-center w-full py-5">
-                        <p className="w-full px-3 mb-2">Роль:</p>
-                        <div role="tablist" className="tabs tabs-box">
-                          {['admin', 'moderator', 'user'].map((role) => (
-                            <p
-                              key={role}
-                              role="tab"
-                              className={`tab ${selectedModalUser?.role === role
-                                ? `tab-active ${role === 'admin'
-                                  ? 'text-primary'
-                                  : role === 'moderator'
-                                    ? 'text-secondary'
-                                    : 'text-white'
-                                }`
-                                : ''
-                                }`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                if (selectedModalUser?.role !== 'owner') {
-                                  makeAdmin(user._id, selectedModalUser._id, role);
-                                }
-                              }}
-                              disabled={selectedModalUser?.role === 'owner' || isChangingRole}
-                            >
-                              {role === 'admin' ? 'Администратор' : role === 'moderator' ? 'Модератор' : 'Пользователь'}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <button className="btn btn-error text-white w-72">Close</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </dialog>
+      <UserProfileModal
+        selectedModalUser={selectedModalUser}
+        currentUser={user}
+        onClose={() => document.getElementById('my_modal_1').close()}
+        handleCopy={handleCopy}
+        onBan={handleBan}
+        onKick={handleKick}
+        onMute={handleMute}
+        onUnmute={handleUnmute}
+        onWarn={handleWarn}
+        onUnban={handleUnban}
+        onMakeAdmin={makeAdmin}
+        isChangingRole={isChangingRole}
+        copied={copied}
+        setCopied={setCopied}
+      />
     </div>
   );
 };

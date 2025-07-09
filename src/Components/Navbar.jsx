@@ -83,6 +83,7 @@ const Navbar = () => {
         };
         fetchNotifications();
     }, [user]);
+    
     useEffect(() => {
         socket.on("admin_result", (data) => {
             if (data.success) {
@@ -205,11 +206,21 @@ const Navbar = () => {
                                     {!notif.read && (
                                         <span className="ml-auto bg-blue-500 h-2 w-2 rounded-full"></span>
                                     )}
+
                                 </div>
+
                             </li>
+
                         ))
                     )}
+                    <button
+                        className="btn btn-xs btn-primary ml-2"
+                        onClick={() => markAsRead(notif._id)}
+                    >
+                        Clear Notification
+                    </button>
                 </ul>
+
             </div>
 
             <div className="dropdown dropdown-start">
@@ -360,13 +371,13 @@ const Navbar = () => {
                                     </p>
                                     <div className="flex justify-center gap-6">
                                         <button
-                                            className="btn bg-neonRed hover:bg-red-600 text-black font-bold shadow-neon-red min-w-[140px]"
+                                            className="btn bg-neonRed hover:bg-error text-black font-bold shadow-neon-red min-w-[140px]"
                                             onClick={handleLogout}
                                         >
                                             Yes
                                         </button>
                                         <button
-                                            className="btn bg-neonCyan hover:bg-cyan-400 text-black font-bold shadow-neon-cyan min-w-[140px]"
+                                            className="btn bg-neonCyan hover:bg-info text-black font-bold shadow-neon-cyan min-w-[140px]"
                                             onClick={() =>
                                                 document.getElementById("my_modal_2").close()
                                             }
