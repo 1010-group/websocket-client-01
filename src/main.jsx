@@ -6,20 +6,20 @@ import { Provider } from "react-redux";
 import { store, persistor } from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Outlet,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
-import PrivateRouter from "./guard/PrivateRouter.jsx"
+import PrivateRouter from "./guard/PrivateRouter.jsx";
 import Chat from "./pages/Chat.jsx";
 import Favorites from "./pages/Favorites.jsx";
-import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
+
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 import App from "./App.jsx";
 
+// Определяем роуты
 const router = createBrowserRouter([
   {
     path: "/",
@@ -50,7 +50,6 @@ const router = createBrowserRouter([
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-
 root.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
@@ -61,3 +60,17 @@ root.render(
     </PersistGate>
   </Provider>
 );
+
+// ✅ Правильная регистрация Service Worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js") // <--- исправленный путь
+      .then((registration) => {
+        console.log("✅ Service Worker зарегистрирован:", registration);
+      })
+      .catch((err) => {
+        console.error("❌ Ошибка регистрации Service Worker:", err);
+      });
+  });
+}

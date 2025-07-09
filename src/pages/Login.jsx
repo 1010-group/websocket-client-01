@@ -33,7 +33,7 @@ const Login = () => {
       return;
     }
 
-    const server = true;
+    const server = false;
     const loginURL = server
       ? "https://websocket-server-01.onrender.com/api/users/login"
       : "http://localhost:5000/api/users/login";
