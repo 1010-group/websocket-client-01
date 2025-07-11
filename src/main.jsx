@@ -13,10 +13,12 @@ import {
 } from "react-router-dom";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
-import PrivateRouter from "./guard/PrivateRouter.jsx"
+import PrivateRouter from "./guard/PrivateRouter.jsx";
 import Chat from "./pages/Chat.jsx";
 import Favorites from "./pages/Favorites.jsx";
-import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
+import Games from "./pages/Games.jsx";
+import Shop from "./pages/Shop.jsx";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
 
@@ -36,6 +38,14 @@ const router = createBrowserRouter([
       {
         path: "favorites",
         element: <Favorites />,
+      },
+      {
+        path: "game",
+        element: <Games />,
+      },
+      {
+        path: "shop",
+        element: <Shop />,
       },
     ],
   },

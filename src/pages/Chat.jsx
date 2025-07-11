@@ -12,6 +12,8 @@ const Chat = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
 
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, messageId: null });
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -21,8 +23,9 @@ const Chat = () => {
       from: currentUser._id,
       to: selectedUser._id,
     });
-  }, [selectedUser]);
+  }, [selectedUser, currentUser]);
 
+  // Зарегистрироваться онлайн
   useEffect(() => {
     if (currentUser) {
       socket.emit('user_joined', currentUser);
@@ -58,17 +61,24 @@ const Chat = () => {
       setChatMessages(messages);
     };
 
+    const handleMessageDeleted = ({ messageId }) => {
+      setChatMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+    };
+
     socket.on('receive_message', receiveMessage);
     socket.on('typed', receiveTyping);
     socket.on('chat_history', receiveHistory);
+    socket.on('message_deleted', handleMessageDeleted);
 
     return () => {
       socket.off('receive_message', receiveMessage);
       socket.off('typed', receiveTyping);
       socket.off('chat_history', receiveHistory);
+      socket.off('message_deleted', handleMessageDeleted);
     };
   }, [selectedUser, currentUser]);
 
+  // Отправить сообщение
   const handleSendMessage = () => {
     if (!message.trim() || !selectedUser) return;
 
@@ -84,9 +94,9 @@ const Chat = () => {
     setMessage('');
   };
 
+  // "печатает"
   const handleTyping = () => {
     if (!selectedUser) return;
-
     socket.emit('typing', {
       from: currentUser._id,
       to: selectedUser._id,
@@ -108,7 +118,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-base-100 flex-1">
+    <div className="relative flex flex-col h-screen bg-base-100 flex-1">
       <div className="bg-base-200 h-[10%] p-4 shadow mb-2">
         <h2 className="text-lg font-bold">{selectedUser?.username || 'Пользователь не выбран'}</h2>
         <p className={selectedUser?.status ? 'text-success' : 'text-error'}>
@@ -131,6 +141,7 @@ const Chat = () => {
         {chatMessages.map((msg, index) => (
           <div
             key={index}
+            onContextMenu={(e) => handleContextMenu(e, msg._id)}
             className={`mb-2 ${msg.from === currentUser._id
               ? 'flex items-center gap-4 justify-start flex-row-reverse'
               : 'flex items-center gap-4 justify-start'
@@ -149,7 +160,7 @@ const Chat = () => {
             </figure>
             <div>
               {msg.from === currentUser._id ? (
-                <p className="text-end px-1 text-primary font-bold">Me</p>
+                <p className="text-end px-1 text-primary font-bold">Я</p>
               ) : (
                 <p className="font-bold">{selectedUser?.username}</p>
               )}
@@ -173,7 +184,7 @@ const Chat = () => {
       <div className="mt-2 flex gap-2 bg-base-300 p-3 rounded-md h-1/12">
         <input
           type="text"
-          placeholder="Xabar yozing..."
+          placeholder="Введите сообщение..."
           className="flex-1 p-2 border rounded"
           value={message}
           onChange={(e) => {
@@ -191,6 +202,37 @@ const Chat = () => {
           <IoSendSharp />
         </button>
       </div>
+
+      {contextMenu.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            zIndex: 50,
+          }}
+          className="bg-white border rounded shadow-md p-2 flex flex-col gap-2"
+        >
+          <button
+            className="hover:bg-gray-100 px-2 py-1 rounded text-left"
+            onClick={handleDeleteLocal}
+          >
+            Удалить только у меня
+          </button>
+          <button
+            className="hover:bg-gray-100 px-2 py-1 rounded text-left text-red-500"
+            onClick={handleDeleteForBoth}
+          >
+            Удалить у меня и у него
+          </button>
+          <button
+            className="hover:bg-gray-100 px-2 py-1 rounded text-left"
+            onClick={() => setContextMenu({ ...contextMenu, visible: false })}
+          >
+            Отмена
+          </button>
+        </div>
+      )}
     </div>
   );
 };
