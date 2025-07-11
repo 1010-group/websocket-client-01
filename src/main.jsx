@@ -13,14 +13,10 @@ import Login from "./pages/Login.jsx";
 import PrivateRouter from "./guard/PrivateRouter.jsx";
 import Chat from "./pages/Chat.jsx";
 import Favorites from "./pages/Favorites.jsx";
-<<<<<<< HEAD
-import Games from "./pages/Games.jsx";
-import Shop from "./pages/Shop.jsx";
-=======
-
->>>>>>> ced13586eca3f0ea924bd971a5ec19f1990c857e
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Games from "./pages/Games.jsx";
+import Shop from "./pages/Shop.jsx";
 
 import App from "./App.jsx";
 
