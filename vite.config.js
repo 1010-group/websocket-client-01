@@ -4,12 +4,23 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  server: {
+    host: "localhost",
+    port: 5173,
+    strictPort: true,
+    hmr: true,
+  },
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["vite.svg", "illustr.png"],
+      filename: "sw.js",           // bu dist ichiga chiqadi
+      strategies: "injectManifest",
+      injectManifest: {
+        swSrc: "src/sw.js",        // bu manba service worker
+        swDest: "sw.js",           // build natijasida
+      },
       manifest: {
         name: "WebSocket Chat",
         short_name: "Chat",
@@ -20,17 +31,17 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/websocket-client-01/public/0fc978aba29e466e8eb4ffc946532d5e.max-1200x800.jpg",
+            src: "http://localhost:5173/public/asd.jpg",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/websocket-client-01/public/0fc978aba29e466e8eb4ffc946532d5e.max-1200x800.jpg",
+            src: "http://localhost:5173/public/asd.jpg",
             sizes: "512x512",
             type: "image/png",
           },
           {
-            src: "/websocket-client-01/public/0fc978aba29e466e8eb4ffc946532d5e.max-1200x800.jpg",
+            src: "http://localhost:5173/public/asd.jpg",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",

@@ -8,17 +8,17 @@
   "start_url": "/",
   "icons": [
     {
-      "src": "/websocket-client-01/public/0fc978aba29e466e8eb4ffc946532d5e.max-1200x800.jpg",
+      "src": "http://localhost:5173/public/asd.jpg",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/websocket-client-01/public/0fc978aba29e466e8eb4ffc946532d5e.max-1200x800.jpg",
+      "src": "http://localhost:5173/public/asd.jpg",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/websocket-client-01/public/0fc978aba29e466e8eb4ffc946532d5e.max-1200x800.jpg",
+      "src": "http://localhost:5173/public/asd.jpg",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
