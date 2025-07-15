@@ -14,11 +14,11 @@ import {
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import PrivateRouter from "./guard/PrivateRouter.jsx"
-import Chat from "./pages/Chat.jsx";
 import Favorites from "./pages/Favorites.jsx";
 import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
 import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
+import Chat from "./pages/Chat.jsx";
 
 const router = createBrowserRouter([
   {
@@ -30,7 +30,7 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "chat/:id",
+        path: "chat/:chatId",
         element: <Chat />,
       },
       {

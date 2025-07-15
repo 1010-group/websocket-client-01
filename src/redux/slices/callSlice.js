@@ -49,3 +49,4 @@ export const {
 } = callSlice.actions;
 
 export default callSlice.reducer;
+// This slice manages the state related to calls, including incoming calls, peer connections, local streams, and call status.

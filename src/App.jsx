@@ -4,9 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import socket from "./socket";
 import Navbar from "./Components/Navbar";
 import Sidebar from "./Components/Sidebar";
-import IncomingCallModal from "./Components/IncomingCallModal";
+import IncomingCallModal from "./Components/SidebarComponents/IncomingCallModal";
 import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
 import { MdCallEnd } from "react-icons/md";
+import BottomNavbar from "./Components/NavbarComponents/BottomNavbar";
+
+
 
 const App = () => {
   const dispatch = useDispatch();
@@ -140,6 +143,9 @@ const App = () => {
         <div className="hidden lg:block">
           <Navbar />
         </div>
+        <div className="w-full lg:hidden">
+          <BottomNavbar />
+        </div>
 
         <div className="flex-1 bg-base-100 flex justify-center items-center relative">
           <Outlet />
@@ -162,7 +168,7 @@ const App = () => {
         </div>
       </div>
 
-      
+
 
       {incomingCall && (
         <IncomingCallModal
