@@ -18,6 +18,8 @@ import Chat from "./pages/Chat.jsx";
 import Favorites from "./pages/Favorites.jsx";
 import Games from "./pages/Games.jsx";
 import Shop from "./pages/Shop.jsx";
+import TetrisGame from "./pages/TetrisGame.jsx";
+import SnakeGame from "./pages/SnakeGame.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
@@ -41,7 +43,11 @@ const router = createBrowserRouter([
       },
       {
         path: "game",
-        element: <Games />,
+        children: [
+          { index: true, element: <Games /> },            // /game ➜ каталог игр
+          { path: "tetris", element: <TetrisGame /> },    // /game/tetris ➜ Тетрис
+          { path: "snake", element: <SnakeGame /> },      // /game/snake ➜ Змейка
+        ],
       },
       {
         path: "shop",
@@ -58,6 +64,7 @@ const router = createBrowserRouter([
     element: <Login />,
   },
 ]);
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 

@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { setSelectedUser } from '../redux/slices/selectedUser';
-import socket from '../socket';
-import { FaPhoneSquareAlt, FaGamepad, FaShoppingCart } from 'react-icons/fa';
-import { BsFillCalendarDateFill } from 'react-icons/bs';
-import { toast } from 'react-toastify';
-import { MdOutlineDriveFileRenameOutline } from 'react-icons/md';
-import { logout } from '../redux/slices/authSlice';
+import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSelectedUser } from "../redux/slices/selectedUser";
+import socket from "../socket";
+import { FaPhoneSquareAlt, FaGamepad, FaShoppingCart } from "react-icons/fa";
+import { BsFillCalendarDateFill } from "react-icons/bs";
+import { toast } from "react-toastify";
+import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
+import { logout } from "../redux/slices/authSlice";
 import { setOnlineUsers } from "../redux/slices/onlineUsers";
 
 const Sidebar = () => {
@@ -20,12 +20,11 @@ const Sidebar = () => {
   const [selectedModalUser, setSelectedModalUser] = useState(null);
   const [copied, setCopied] = useState(false);
   const [isChangingRole, setIsChangingRole] = useState(false);
-  const onlineUsers = useSelector(state => state?.onlineUsers?.onlineUsers);
+  const onlineUsers = useSelector((state) => state?.onlineUsers?.onlineUsers);
   const handleSearch = (searchTerm) => {
     if (!searchTerm) {
       setFilteredUsers(onlineUsers);
       return;
-      
     }
     const filtered = onlineUsers.filter((u) =>
       u.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,16 +34,16 @@ const Sidebar = () => {
 
   const handleOpenChat = (malumot) => {
     if (malumot._id === user._id) {
-      navigate('/favorites');
+      navigate("/favorites");
     } else {
       dispatch(setSelectedUser(malumot));
-      navigate('/chat/' + malumot._id);
+      navigate("/chat/" + malumot._id);
     }
   };
 
   const handleOpenModal = (malumot) => {
     setSelectedModalUser(malumot);
-    document.getElementById('my_modal_1').showModal();
+    document.getElementById("my_modal_1").showModal();
   };
 
   const handleCopy = async (phone) => {
@@ -54,17 +53,16 @@ const Sidebar = () => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        console.error('Ошибка копирования:', err);
-        toast.error('Ошибка копирования номера');
+        console.error("Ошибка копирования:", err);
+        toast.error("Ошибка копирования номера");
       }
-      
     }
   };
 
   const handleWarn = (userId) => {
-    socket.emit('warn_user', { userId });
+    socket.emit("warn_user", { userId });
 
-    socket.once('warn_result', (data) => {
+    socket.once("warn_result", (data) => {
       if (!data.success) {
         toast.error(data.message);
         return;
@@ -72,85 +70,111 @@ const Sidebar = () => {
 
       setSelectedModalUser(data.user);
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned } : u))
+        prev.map((u) =>
+          u._id === data.user._id
+            ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned }
+            : u
+        )
       );
       setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned } : u))
+        prev.map((u) =>
+          u._id === data.user._id
+            ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned }
+            : u
+        )
       );
 
       if (data.user.isBanned) {
         if (data.user._id === user._id) {
           toast.error(`Вы были заблокированы (3/3), ${data.user.username}`);
         } else {
-          toast.success(`Пользователь ${data.user.username} успешно заблокирован.`);
+          toast.success(
+            `Пользователь ${data.user.username} успешно заблокирован.`
+          );
         }
       } else {
-        toast.warn(`Предупреждение для ${data.user.username}: ${data.user.isWarn}/3`);
+        toast.warn(
+          `Предупреждение для ${data.user.username}: ${data.user.isWarn}/3`
+        );
       }
     });
   };
 
   const handleUnban = async (userId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/users/unban/${userId}`, {
-        method: 'POST',
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/users/unban/${userId}`,
+        {
+          method: "POST",
+        }
+      );
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.message || 'Ошибка разблокировки');
+        toast.error(data.message || "Ошибка разблокировки");
         return;
       }
 
-      toast.success('Пользователь разблокирован');
+      toast.success("Пользователь разблокирован");
       setSelectedModalUser(data.user);
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u))
+        prev.map((u) =>
+          u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u
+        )
       );
       setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u))
+        prev.map((u) =>
+          u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u
+        )
       );
     } catch (error) {
       console.error(error);
-      toast.error('Ошибка разблокировки');
+      toast.error("Ошибка разблокировки");
     }
   };
 
   const handleBan = (SelectedId) => {
-    const reason = 'Нарушение правил'; // Default reason; can be enhanced with user input
-    socket.emit('ban_user', { userId: user._id, SelectedId, reason });
-    socket.once('ban_result', (data) => {
+    const reason = "Нарушение правил"; // Default reason; can be enhanced with user input
+    socket.emit("ban_user", { userId: user._id, SelectedId, reason });
+    socket.once("ban_result", (data) => {
       if (!data.success) {
         toast.error(data.message);
         return;
       }
 
       if (data.success) {
-        toast.success(data.message)
+        toast.success(data.message);
       }
 
       setSelectedModalUser(data.user);
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
+        prev.map((u) =>
+          u._id === data.user._id
+            ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn }
+            : u
+        )
       );
       setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn } : u))
+        prev.map((u) =>
+          u._id === data.user._id
+            ? { ...u, isBanned: data.user.isBanned, isWarn: data.user.isWarn }
+            : u
+        )
       );
-
     });
     socket.once("personal_message", (data) => {
-      console.log("DATA: ", data.message)
+      console.log("DATA: ", data.message);
       if (data?.type === "warning") {
         toast.warn(data.message);
-        dispatch(logout())
+        dispatch(logout());
       }
-    })
+    });
   };
 
   const makeAdmin = (userId, selectedId, role) => {
-    if (!['admin', 'moderator', 'user'].includes(role)) return;
+    if (!["admin", "moderator", "user"].includes(role)) return;
     setIsChangingRole(true);
-    socket.emit('make_admin', { userId, SelectedId: selectedId, role });
+    socket.emit("make_admin", { userId, SelectedId: selectedId, role });
   };
 
   const handleMute = async (userID, selectedUser, reason) => {
@@ -172,7 +196,9 @@ const Sidebar = () => {
 
         // 🔄 UI holatini yangilash
         setSelectedModalUser((prev) =>
-          prev?._id === data.user._id ? { ...prev, isMuted: data.user.isMuted } : prev
+          prev?._id === data.user._id
+            ? { ...prev, isMuted: data.user.isMuted }
+            : prev
         );
 
         setOnlineUsers((prev) =>
@@ -187,7 +213,6 @@ const Sidebar = () => {
           )
         );
       });
-
     } catch (e) {
       console.error("WEBSOCKET ERROR: ", e);
       toast.error("Mute berishda xatolik yuz berdi");
@@ -198,14 +223,12 @@ const Sidebar = () => {
     if (onlineUsers.length > 0) {
       dispatch(setOnlineUsers(onlineUsers));
     }
-
-  }, [onlineUsers])
-
+  }, [onlineUsers]);
 
   useEffect(() => {
     if (!user || !user._id) return;
 
-    socket.emit('user_joined', {
+    socket.emit("user_joined", {
       _id: user._id,
       username: user.username,
       fullName: user.fullName,
@@ -216,7 +239,7 @@ const Sidebar = () => {
     });
 
     const handleOnlineUsers = (users) => {
-      console.log('Received online_users:', users);
+      console.log("Received online_users:", users);
       const filtered = users.filter((u) => u._id !== user._id);
       setOnlineUsers(filtered);
       setFilteredUsers(filtered);
@@ -233,48 +256,54 @@ const Sidebar = () => {
 
       toast.success(data.message);
       setOnlineUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user?.role } : u))
+        prev.map((u) =>
+          u._id === data.user._id ? { ...u, role: data.user?.role } : u
+        )
       );
       setFilteredUsers((prev) =>
-        prev.map((u) => (u._id === data.user._id ? { ...u, role: data.user?.role } : u))
+        prev.map((u) =>
+          u._id === data.user._id ? { ...u, role: data.user?.role } : u
+        )
       );
-      setSelectedModalUser((prev) => (prev ? { ...prev, role: data.user?.role } : prev));
+      setSelectedModalUser((prev) =>
+        prev ? { ...prev, role: data.user?.role } : prev
+      );
     };
 
-    socket.on('online_users', handleOnlineUsers);
-    socket.on('admin_result', handleAdminResult);
+    socket.on("online_users", handleOnlineUsers);
+    socket.on("admin_result", handleAdminResult);
 
     const handleBeforeUnload = () => {
-      socket.emit('user_left', user);
+      socket.emit("user_left", user);
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      socket.emit('user_left', user);
-      socket.off('online_users', handleOnlineUsers);
-      socket.off('admin_result', handleAdminResult);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      socket.emit("user_left", user);
+      socket.off("online_users", handleOnlineUsers);
+      socket.off("admin_result", handleAdminResult);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [user]);
 
   useEffect(() => {
     if (user?._id) {
-      socket.emit('check_warns', { userId: user._id });
+      socket.emit("check_warns", { userId: user._id });
 
-      socket.on('warn_status', (data) => {
+      socket.on("warn_status", (data) => {
         if (data.isBanned) {
           // toast.error('Your account is banned');
-          socket.emit('user_left', user);
+          socket.emit("user_left", user);
           dispatch(logout());
-          navigate('/login');
+          navigate("/login");
         } else if (data.isWarn > 0) {
           toast.warn(`You have ${data.isWarn}/3 warnings`);
         }
       });
 
       return () => {
-        socket.off('warn_status');
+        socket.off("warn_status");
       };
     }
   }, [user, dispatch, navigate]);
@@ -284,30 +313,40 @@ const Sidebar = () => {
   );
 
   return (
-    <div className="w-3/12 bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
-    <div className="flex justify-between items-center mb-4 px-2">
-  <h2 className="text-xl font-bold">Online Users</h2>
-  <div className="flex gap-2">
-    <button
-      onClick={() => navigate("/game")}
-      className="btn btn-circle btn-sm btn-primary flex items-center justify-center"
-      title="Game"
-    >
-      <FaGamepad className="text-lg" />
-    </button>
-    <button
-      onClick={() => navigate("/shop")}
-      className="btn btn-circle btn-sm btn-secondary flex items-center justify-center"
-      title="Shop"
-    >
-      <FaShoppingCart className="text-lg" />
-    </button>
-  </div>
-</div>
+    <div className="min-w-[250px] w-3/12 max-w-xs bg-base-300 overflow-y-auto p-2 h-screen flex-col flex py-5">
+      <div className="flex justify-between items-center mb-4 px-2">
+        <h2 className="text-lg font-bold">Пользователи</h2>
+        <div className="flex gap-1">
+          <button
+            onClick={() => navigate("/game")}
+            className="btn btn-circle btn-sm btn-primary flex items-center justify-center"
+            title="Game"
+          >
+            <FaGamepad className="text-sm" />
+          </button>
+          <button
+            onClick={() => navigate("/shop")}
+            className="btn btn-circle btn-sm btn-secondary flex items-center justify-center"
+            title="Shop"
+          >
+            <FaShoppingCart className="text-sm" />
+          </button>
+        </div>
+      </div>
 
       <label className="input mb-4 flex items-center gap-2 bg-base-200 rounded-full p-2 w-full shadow-md shadow-primary">
-        <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor">
+        <svg
+          className="h-[1em] opacity-50"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+        >
+          <g
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            strokeWidth="2.5"
+            fill="none"
+            stroke="currentColor"
+          >
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.3-4.3"></path>
           </g>
@@ -330,41 +369,69 @@ const Sidebar = () => {
           sortedUsers.map((u) => (
             <div
               key={u._id}
-              className={`${u?.role === 'owner' ? 'shadow-md shadow-error animate-pulse' : ''} max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
+              className={`${
+                u?.role === "owner"
+                  ? "shadow-md shadow-error animate-pulse"
+                  : ""
+              } max-w-[90%] mx-auto relative flex items-center flex-1 w-full gap-3 p-2 mb-2 bg-base-200 rounded cursor-pointer hover:bg-base-100 transition`}
               onClick={() => handleOpenChat(u)}
             >
-              <button onClick={(e) => { e.stopPropagation(); handleOpenModal(u); }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenModal(u);
+                }}
+              >
                 <img
-                  className="w-12 h-12 rounded-full"
-                  src={u.image || 'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'}
+                  className="w-9 h-9 rounded-full"
+                  src={
+                    u.image ||
+                    "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                  }
                   alt={u.username}
                 />
               </button>
               <div>
-                <p className={`${u?.role === 'owner' ? 'text-error' : ''} font-semibold ${u?.role === 'owner' ? 'text-shadow-md text-shadow-error' : ''}`}>
+                <p
+                  className={`${
+                    u?.role === "owner" ? "text-error" : ""
+                  } font-semibold ${
+                    u?.role === "owner"
+                      ? "text-shadow-md text-shadow-error"
+                      : ""
+                  }`}
+                >
                   {u.username}
                 </p>
-                <p className={u.status ? 'text-success' : 'text-error'}>
-                  {u.status ? 'Online' : 'Offline'}
+                <p className={u.status ? "text-success" : "text-error"}>
+                  {u.status ? "Online" : "Offline"}
                 </p>
               </div>
               <div className="flex-1 text-end text-xs">
                 <div className="flex items-center gap-2 flex-1 justify-end relative">
                   {u.isBanned ? (
-                    <span className="text-red-500 font-bold text-shadow-md text-shadow-error">Banned</span>
-                  ) : u?.role === 'owner' ? (
+                    <span className="text-red-500 font-bold text-shadow-md text-shadow-error">
+                      Banned
+                    </span>
+                  ) : u?.role === "owner" ? (
                     <>
-                      <span className="text-error/75 text-shadow-md text-shadow-error">Owner</span>
+                      <span className="text-error/75 text-shadow-md text-shadow-error">
+                        Owner
+                      </span>
                       <img
                         src="https://img.pikbest.com/origin/09/26/93/60DpIkbEsTGF9.png!sw800"
                         className="size-12 absolute -top-5 -right-5"
                         alt=""
                       />
                     </>
-                  ) : u?.role === 'admin' ? (
-                    <span className="text-info/75 text-shadow-md text-shadow-info">Admin</span>
-                  ) : u?.role === 'moderator' ? (
-                    <span className="text-warning/75 text-shadow-md text-shadow-warning">Moderator</span>
+                  ) : u?.role === "admin" ? (
+                    <span className="text-info/75 text-shadow-md text-shadow-info">
+                      Admin
+                    </span>
+                  ) : u?.role === "moderator" ? (
+                    <span className="text-warning/75 text-shadow-md text-shadow-warning">
+                      Moderator
+                    </span>
                   ) : null}
                 </div>
               </div>
@@ -382,7 +449,7 @@ const Sidebar = () => {
                     className="w-14 h-14 rounded-full border-2 border-cyan-600 shadow-cyan-600 shadow-2xl"
                     src={
                       selectedModalUser?.image ||
-                      'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
+                      "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
                     }
                     alt={selectedModalUser?.username}
                   />
@@ -393,17 +460,23 @@ const Sidebar = () => {
                     </p>
                     <div className="flex items-center gap-2">
                       <div
-                        aria-label={selectedModalUser?.status ? 'success' : 'error'}
-                        className={selectedModalUser?.status ? 'status status-success' : 'status status-error'}
+                        aria-label={
+                          selectedModalUser?.status ? "success" : "error"
+                        }
+                        className={
+                          selectedModalUser?.status
+                            ? "status status-success"
+                            : "status status-error"
+                        }
                       ></div>
                       <p
                         className={
                           selectedModalUser?.status
-                            ? 'text-success font-semibold text-shadow-success'
-                            : 'text-error font-semibold text-shadow-error'
+                            ? "text-success font-semibold text-shadow-success"
+                            : "text-error font-semibold text-shadow-error"
                         }
                       >
-                        {selectedModalUser?.status ? 'Online' : 'Offline'}
+                        {selectedModalUser?.status ? "Online" : "Offline"}
                       </p>
                     </div>
                   </div>
@@ -414,14 +487,19 @@ const Sidebar = () => {
                   <div className="flex items-center gap-2 group duration-300">
                     <div
                       className="hidden group-hover:flex items-center gap-2 cursor-pointer duration-300"
-                      onClick={() => handleCopy(selectedModalUser?.phone || user?.phone)}
+                      onClick={() =>
+                        handleCopy(selectedModalUser?.phone || user?.phone)
+                      }
                     >
                       <div className="text-success text font-black duration-300">
-                        {copied ? 'Copied!' : 'Copy'}
+                        {copied ? "Copied!" : "Copy"}
                       </div>
                     </div>
                     <FaPhoneSquareAlt className="text-success text-2xl" />
-                    <a href={`tel:${selectedModalUser?.phone || user?.phone}`} className="text-success">
+                    <a
+                      href={`tel:${selectedModalUser?.phone || user?.phone}`}
+                      className="text-success"
+                    >
                       {selectedModalUser?.phone || user?.phone}
                     </a>
                   </div>
@@ -429,12 +507,14 @@ const Sidebar = () => {
                     <BsFillCalendarDateFill className="inline-block text-secondary text-2xl" />
                     <p className="text-secondary">
                       {selectedModalUser?.birthDate || user?.birthDate
-                        ? new Date(selectedModalUser?.birthDate || user?.birthDate).toLocaleDateString('en-CA')
-                        : '-'}
+                        ? new Date(
+                            selectedModalUser?.birthDate || user?.birthDate
+                          ).toLocaleDateString("en-CA")
+                        : "-"}
                     </p>
                   </div>
                 </div>
-                {['admin', 'owner'].includes(user?.role) && (
+                {["admin", "owner"].includes(user?.role) && (
                   <div className="flex flex-col w-full gap-4">
                     <p className="text-2xl text-accent font-semibold text-shadow-sm text-shadow-accent">
                       Панель Администратора
@@ -443,18 +523,26 @@ const Sidebar = () => {
                       <button
                         className="btn btn-soft btn-error m-1"
                         onClick={() => handleBan(selectedModalUser?._id)}
-                        disabled={selectedModalUser?.isBanned || selectedModalUser?.role === 'owner'}
+                        disabled={
+                          selectedModalUser?.isBanned ||
+                          selectedModalUser?.role === "owner"
+                        }
                       >
                         Заблокировать
                       </button>
-                      <button className="btn btn-soft btn-error m-1" onClick={() => handleMute(user._id, selectedModalUser._id, "gey")}>
+                      <button
+                        className="btn btn-soft btn-error m-1"
+                        onClick={() =>
+                          handleMute(user._id, selectedModalUser._id, "gey")
+                        }
+                      >
                         Mute
                       </button>
                       {!selectedModalUser?.isBanned && (
                         <button
                           className="btn btn-soft btn-error m-1"
                           onClick={() => handleWarn(selectedModalUser._id)}
-                          disabled={selectedModalUser?.role === 'owner'}
+                          disabled={selectedModalUser?.role === "owner"}
                         >
                           Warning ({selectedModalUser?.isWarn || 0}/3)
                         </button>
@@ -462,35 +550,48 @@ const Sidebar = () => {
                       <button
                         className="btn btn-soft btn-success m-1"
                         onClick={() => handleUnban(selectedModalUser._id)}
-                      // disabled={!selectedModalUser?.isBanned}
+                        // disabled={!selectedModalUser?.isBanned}
                       >
                         Unban
                       </button>
                       <div className="flex justify-center flex-col items-center w-full py-5">
                         <p className="w-full px-3 mb-2">Роль:</p>
                         <div role="tablist" className="tabs tabs-box">
-                          {['admin', 'moderator', 'user'].map((role) => (
+                          {["admin", "moderator", "user"].map((role) => (
                             <p
                               key={role}
                               role="tab"
-                              className={`tab ${selectedModalUser?.role === role
-                                ? `tab-active ${role === 'admin'
-                                  ? 'text-primary'
-                                  : role === 'moderator'
-                                    ? 'text-secondary'
-                                    : 'text-white'
-                                }`
-                                : ''
-                                }`}
+                              className={`tab ${
+                                selectedModalUser?.role === role
+                                  ? `tab-active ${
+                                      role === "admin"
+                                        ? "text-primary"
+                                        : role === "moderator"
+                                        ? "text-secondary"
+                                        : "text-white"
+                                    }`
+                                  : ""
+                              }`}
                               onClick={(e) => {
                                 e.preventDefault();
-                                if (selectedModalUser?.role !== 'owner') {
-                                  makeAdmin(user._id, selectedModalUser._id, role);
+                                if (selectedModalUser?.role !== "owner") {
+                                  makeAdmin(
+                                    user._id,
+                                    selectedModalUser._id,
+                                    role
+                                  );
                                 }
                               }}
-                              disabled={selectedModalUser?.role === 'owner' || isChangingRole}
+                              disabled={
+                                selectedModalUser?.role === "owner" ||
+                                isChangingRole
+                              }
                             >
-                              {role === 'admin' ? 'Администратор' : role === 'moderator' ? 'Модератор' : 'Пользователь'}
+                              {role === "admin"
+                                ? "Администратор"
+                                : role === "moderator"
+                                ? "Модератор"
+                                : "Пользователь"}
                             </p>
                           ))}
                         </div>
