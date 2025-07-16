@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import tailwindcss from "@tailwindcss/postcss";
-import autoprefixer from "autoprefixer";
 
 const manifest = {
   name: "Web Chat",
@@ -31,6 +30,7 @@ const manifest = {
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(), // ✅ faqat plugin, postcss keremas
     VitePWA({
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
@@ -47,8 +47,7 @@ export default defineConfig({
         rollupFormat: 'iife',
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
       }
-    }),
-    tailwindcss()
+    })
   ],
   server: {
     host: "localhost",
@@ -63,14 +62,11 @@ export default defineConfig({
       }
     }
   },
-
   build: {
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+          if (id.includes('node_modules')) return 'vendor';
         }
       }
     }
