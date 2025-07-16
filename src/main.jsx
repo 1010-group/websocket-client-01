@@ -5,6 +5,7 @@ import "./index.css";
 import { Provider } from "react-redux";
 import { store, persistor } from "./redux/store";
 import { PersistGate } from "redux-persist/integration/react";
+import { registerSW } from 'virtual:pwa-register'
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -17,8 +18,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Games from "./pages/Games.jsx";
 import Shop from "./pages/Shop.jsx";
-
+import './index.css';
 import App from "./App.jsx";
+import { immediate } from "tone";
 
 // Определяем роуты
 const router = createBrowserRouter([
@@ -70,16 +72,4 @@ root.render(
   </Provider>
 );
 
-// ✅ Правильная регистрация Service Worker
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js") // <--- исправленный путь
-      .then((registration) => {
-        console.log("✅ Service Worker зарегистрирован:", registration);
-      })
-      .catch((err) => {
-        console.error("❌ Ошибка регистрации Service Worker:", err);
-      });
-  });
-}
+registerSW({ immediate: true })

@@ -1,53 +1,78 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import tailwindcss from "@tailwindcss/postcss";
+import autoprefixer from "autoprefixer";
+
+const manifest = {
+  name: "Web Chat",
+  short_name: "Chat",
+  start_url: "/",
+  display: "standalone",
+  background_color: "#ffffff",
+  theme_color: "#8936FF",
+  icons: [
+    {
+      src: "/icon512_rounded.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "any"
+    },
+    {
+      src: "/icon512_maskable.png",
+      sizes: "512x512",
+      type: "image/png",
+      purpose: "maskable"
+    }
+  ],
+  version: "1.0.0"
+};
 
 export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      manifest,
+      devOptions: {
+        enabled: true
+      },
+      injectManifest: {
+        globPatterns: [
+          '**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff2,woff,ttf}'
+        ],
+        rollupFormat: 'iife',
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
+      }
+    }),
+    tailwindcss()
+  ],
   server: {
     host: "localhost",
     port: 5173,
     strictPort: true,
     hmr: true,
+    proxy: {
+      '/socket.io': {
+        target: 'https://websocket-server-01.onrender.com',
+        changeOrigin: true,
+        ws: true
+      }
+    }
   },
-  plugins: [
-    react(),
-    tailwindcss(),
-    VitePWA({
-      registerType: "autoUpdate",
-      filename: "sw.js",           // bu dist ichiga chiqadi
-      strategies: "injectManifest",
-      injectManifest: {
-        swSrc: "src/sw.js",        // bu manba service worker
-        swDest: "sw.js",           // build natijasida
-      },
-      manifest: {
-        name: "WebSocket Chat",
-        short_name: "Chat",
-        description: "PWA чат с WebSocket, ролями, звонками",
-        theme_color: "#111827",
-        background_color: "#ffffff",
-        display: "standalone",
-        start_url: "/",
-        icons: [
-          {
-            src: "http://localhost:5173/public/asd.jpg",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "http://localhost:5173/public/asd.jpg",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "http://localhost:5173/public/asd.jpg",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-        ],
-      },
-    }),
-  ],
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
+  }
 });
