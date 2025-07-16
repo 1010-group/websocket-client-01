@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 const manifest = {
-  name: "Web Chat",
+  name: "Mars Chat",
   short_name: "Chat",
   start_url: "/",
   display: "standalone",
