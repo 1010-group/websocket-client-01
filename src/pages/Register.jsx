@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
+
 const Register = () => {
   const [formData, setFormData] = useState({
     username: "",    // @username (id)
@@ -63,9 +64,9 @@ const Register = () => {
   return (
     <div className="min-h-screen flex">
       <div
-        className="w-1/2 bg-cover bg-center"
+        className="w-360   bg-cover bg-center"
         style={{
-          backgroundImage: "url('https://via.placeholder.com/800x1200')",
+          backgroundImage: "url('./illust.png')",
         }}
       />
       <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">

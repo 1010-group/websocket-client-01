@@ -1,14 +1,10 @@
+// ===== Calls.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from 'react';
 import { IoIosCall } from 'react-icons/io';
 import { MdCallEnd } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import socket from '../socket';
 import { setStatus } from '../redux/slices/callSlice';
-
-// Ovoz fayllarini import qilish (fayllar assets/mp3/ da)
-import manabuSound from '../assets/manabu.mp3'; // Qo‘ng‘iroq ovozi
-import callsuserSound from '../assets/callsuser.mp3'; // Foydalanuvchi online bo‘lsa ovoz
-import endcallsSound from '../assets/endcalls.mp3'; // Foydalanuvchi javob bermasa yoki qo‘ng‘iroq tugaganda ovoz
 
 const Calls = ({ selectedUser, currentUser }) => {
   const dispatch = useDispatch();
@@ -17,39 +13,17 @@ const Calls = ({ selectedUser, currentUser }) => {
 
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
-  const audioRef = useRef(null); // Ovoz faylini ijro etish uchun ref
   const onlineUsers = useSelector((state) => state.onlineUsers.onlineUsers);
-
-  const playSound = (soundFile) => {
-    if (audioRef.current) {
-      audioRef.current.src = soundFile;
-      audioRef.current.play().catch((e) => {
-        console.error('Ovoz ijro etishda xato:', e);
-      });
-    }
-  };
-
-  // Play endcalls sound if no user is selected
-  useEffect(() => {
-    if (!selectedUser && !currentUser) {
-      playSound(endcallsSound);
-    }
-  }, [selectedUser, currentUser]);
 
   const handleCall = async () => {
     const target = onlineUsers.find((u) => u._id === selectedUser._id);
     if (!target?.socketId) {
       alert('❌ Foydalanuvchi offline yoki socketId yo‘q.');
-      playSound(endcallsSound); // Offline bo‘lsa bu ovoz ijro etiladi
       return;
     }
 
     setIsCalling(true);
-    setStatusText('Calling...');
     document.getElementById('my_modal_call')?.showModal();
-
-    playSound(manabuSound); // Qo‘ng‘iroq boshlanganda manabu ovoz
-    playSound(callsuserSound); // Foydalanuvchi online bo‘lsa bu ovoz ijro etiladi
 
     const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     localStreamRef.current = stream;
@@ -115,11 +89,6 @@ const Calls = ({ selectedUser, currentUser }) => {
     setIsCalling(false);
     setStatusText('Calling...');
     document.getElementById('my_modal_call')?.close();
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    playSound(endcallsSound); // Play end call sound when the call ends
   };
 
   useEffect(() => {
@@ -128,10 +97,6 @@ const Calls = ({ selectedUser, currentUser }) => {
       await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
       setStatusText('Connected');
       dispatch(setStatus('in-call'));
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
     });
 
     socket.on('ice_candidate', ({ candidate }) => {
@@ -154,17 +119,14 @@ const Calls = ({ selectedUser, currentUser }) => {
 
   return (
     <div>
-      {selectedUser && (
-        <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}>
-          <IoIosCall />
-        </button>
-      )}
+      <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}>
+        <IoIosCall />
+      </button>
 
       <dialog id="my_modal_call" className="modal">
         <div className="modal-box w-full max-w-md">
           <div className="flex flex-col items-center py-4">
             <audio id="remote_audio" autoPlay controls className="mb-4" />
-            <audio ref={audioRef} />
             <figcaption className="text-center mt-2 text-accent animate-pulse">{status}</figcaption>
           </div>
           <div className="modal-action justify-center">

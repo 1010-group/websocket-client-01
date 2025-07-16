@@ -19,9 +19,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Games from "./pages/Games.jsx";
 import Shop from "./pages/Shop.jsx";
 import './index.css';
-import App from "./App.jsx";
 import { immediate } from "tone";
-
+import App from "./App.jsx";
 // Определяем роуты
 const router = createBrowserRouter([
   {
@@ -33,7 +32,7 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "chat/:id",
+        path: "chat/:chatId",
         element: <Chat />,
       },
       {
