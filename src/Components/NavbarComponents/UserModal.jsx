@@ -14,6 +14,8 @@ import socket from '../../socket';
 const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
 
   const [notifications, setNotifications] = useState([]);
+  const currentUser = useSelector((state) => state.auth.user);
+  console.log("currenctUser: ", currentUser )
   const notificationSoundRef = useRef(null);
   const errorSoundRef = useRef(null);
 
@@ -140,7 +142,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
   return (
     <div className="">
       <button className="btn" onClick={() => document.getElementById('my_modal_user').showModal()}>
-        <IoMdSettings className="text-2xl text-primary text-shadow-xl text-shadow-primary"/>
+        <IoMdSettings className="text-2xl text-primary text-shadow-xl text-shadow-primary" />
       </button>
 
       <dialog id="my_modal_user" className="modal">
