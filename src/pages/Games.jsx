@@ -6,16 +6,24 @@ const games = [
     id: "tetris",
     title: "Мини-Тетрис",
     description: "Классическая игра Тетрис с уровнями и счетом.",
-    image: "/tetris-preview.png",
+    image: "/tetris.png",
     route: "/game/tetris",
   },
   {
     id: "snake",
     title: "Змейка",
     description: "Управляй змейкой и ешь яблоки!",
-    image: "/snake-preview.png",
+    image: "/Snake.png",
     route: "/game/snake",
   },
+  {
+  id: "pong",
+  title: "Понг",
+  description: "Две ракетки, мячик отскакивает от стенок.",
+  image: "/pong.png",    // свой путь к превью
+  route: "/game/pong",
+}
+
 ];
 
 export default function GamesList() {

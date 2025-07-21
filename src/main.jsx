@@ -23,6 +23,7 @@ import SnakeGame from "./pages/SnakeGame.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
+import PongGame from "./pages/PongGame.jsx";
 
 const router = createBrowserRouter([
   {
@@ -41,14 +42,17 @@ const router = createBrowserRouter([
         path: "favorites",
         element: <Favorites />,
       },
-      {
-        path: "game",
-        children: [
-          { index: true, element: <Games /> },            // /game ➜ каталог игр
-          { path: "tetris", element: <TetrisGame /> },    // /game/tetris ➜ Тетрис
-          { path: "snake", element: <SnakeGame /> },      // /game/snake ➜ Змейка
-        ],
-      },
+
+{
+  path: "game",
+  children: [
+    { index: true, element: <Games /> },
+    { path: "tetris", element: <TetrisGame /> },
+    { path: "snake", element: <SnakeGame /> },
+    { path: "pong", element: <PongGame /> },   // ➜ новый маршрут
+  ],
+},
+
       {
         path: "shop",
         element: <Shop />,
