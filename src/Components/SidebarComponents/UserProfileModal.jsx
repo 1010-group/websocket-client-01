@@ -30,7 +30,7 @@ const UserProfileModal = ({
                   className="w-14 h-14 rounded-full border-2 border-cyan-600 shadow-cyan-600 shadow-2xl"
                   src={
                     selectedModalUser?.image ||
-                    'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
+                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScdIYuCdg369Zi9PDQqmDljt26Co3bVUf4wA&s'
                   }
                   alt={selectedModalUser?.username}
                 />
@@ -167,47 +167,48 @@ const UserProfileModal = ({
                     )}
                   </div>
 
-                  {/* Role tabs */}
-                  <div className="flex flex-wrap w-full flex-1 gap-2">
-                    <div className="flex justify-center flex-col items-center w-full py-5">
-                      <p className="w-full px-3 mb-2">Роль:</p>
-                      <div role="tablist" className="tabs tabs-box">
-                        {['owner', 'admin', 'moderator', 'user'].map((role) => (
-                          <p
-                            key={role}
-                            role="tab"
-                            className={`tab ${selectedModalUser?.role === role
-                              ? `tab-active ${role === 'admin'
-                                ? 'text-primary'
-                                : role === 'moderator'
-                                  ? 'text-secondary'
-                                  : 'text-white'}`
-                              : ''
-                              }`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (
-                                selectedModalUser &&
-                                currentUser._id !== selectedModalUser._id &&
-                                !isChangingRole
-                              ) {
-                                onMakeAdmin(currentUser._id, selectedModalUser._id, role); // ✅ fixed name
-                              }
-                            }}
-                            disabled={isChangingRole}
-                          >
-                            {role === 'owner'
-                              ? 'Owner'
-                              : role === 'admin'
-                                ? 'Admin'
-                                : role === 'moderator'
-                                  ? 'Moderator'
-                                  : 'User'}
-                          </p>
-                        ))}
+                  {currentUser?.role === 'owner' && (
+                    <div className="flex flex-wrap w-full flex-1 gap-2">
+                      <div className="flex justify-center flex-col items-center w-full py-5">
+                        <p className="w-full px-3 mb-2">Роль:</p>
+                        <div role="tablist" className="tabs tabs-box">
+                          {['owner', 'admin', 'moderator', 'user'].map((role) => (
+                            <p
+                              key={role}
+                              role="tab"
+                              className={`tab ${selectedModalUser?.role === role
+                                ? `tab-active ${role === 'admin'
+                                  ? 'text-primary'
+                                  : role === 'moderator'
+                                    ? 'text-secondary'
+                                    : 'text-white'}`
+                                : ''
+                                }`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (
+                                  selectedModalUser &&
+                                  currentUser._id !== selectedModalUser._id &&
+                                  !isChangingRole
+                                ) {
+                                  onMakeAdmin(currentUser._id, selectedModalUser._id, role); // ✅ fixed name
+                                }
+                              }}
+                              disabled={isChangingRole || selectedModalUser?.role === 'owner'}
+                            >
+                              {role === 'owner'
+                                ? 'Owner'
+                                : role === 'admin'
+                                  ? 'Admin'
+                                  : role === 'moderator'
+                                    ? 'Moderator'
+                                    : 'User'}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

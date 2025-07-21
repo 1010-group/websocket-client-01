@@ -18,7 +18,12 @@ import Favorites from "./pages/Favorites.jsx";
 import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
 import "react-toastify/dist/ReactToastify.css";
 import App from "./App.jsx";
-import Chat from "./pages/Chat.jsx";
+import Chat from "./pages/Chat.jsx"
+import Games from "./pages/Games.jsx";
+import HangmanGame from "./Games/HangMan.jsx";
+import TicTacToe from "./Games/TicTacToe.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import Typer from "./Games/Typer.jsx";
 
 const router = createBrowserRouter([
   {
@@ -46,6 +51,26 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/game",
+    element: <Games />,
+  },
+  {
+    path: "/game/hangman",
+    element: <HangmanGame />,
+  },
+  {
+    path: "/game/tic-tac-toe",
+    element: <TicTacToe />,
+  },
+  {
+    path: "/game/typer",
+    element: <Typer />,
+  },
+  {
+    path: "*",
+    element: <NotFound />
   },
 ]);
 

@@ -16,16 +16,12 @@ import { Howl } from 'howler';
 import socket from '../../socket';
 
 
-
-import Calls from '../Calls';
-import NotificationBell from './NotificationBell';
 import ThemeSwitcher from './ThemeSwitcher';
-import UserDrawer from './UserDrawer';
+
 import UserModal from './UserModal';
 
 const BottomNavbar = () => {
-    const { chatId } = useParams()
-    console.log(chatId)
+    const { chatId } = useParams();
     const user = useSelector((state) => state.auth.user);
     const selectedUser = useSelector((state) => state?.selectChat?.selectedUser);
     const dispatch = useDispatch();
@@ -36,10 +32,6 @@ const BottomNavbar = () => {
     const notificationSoundRef = useRef(null);
     const errorSoundRef = useRef(null);
 
-
-
-   
-
     const handleCopy = async (phone) => {
         if (phone) {
             try {
@@ -49,7 +41,6 @@ const BottomNavbar = () => {
             } catch (err) {
                 console.error('Ошибка копирования:', err);
                 toast.error('Ошибка копирования номера');
-                playErrorSound();
             }
         }
     };
@@ -60,12 +51,11 @@ const BottomNavbar = () => {
         navigate('/login');
     };
 
-  
+    // 👉 Если chatId есть — не показываем док
+    if (chatId) return null;
 
     return (
-        <div className="dock bg-base-300 text-neutral-content flex items-center justify-center  ">
-          
-
+        <div className="dock bg-base-300 text-neutral-content flex items-center justify-center">
             <div className="dropdown dropdown-top">
                 <ThemeSwitcher theme={theme} setTheme={setTheme} />
             </div>
@@ -79,9 +69,9 @@ const BottomNavbar = () => {
                     onClose={() => document.getElementById('my_modal_user').close()}
                 />
             </div>
-
         </div>
-    )
-}
+    );
+};
+
 
 export default BottomNavbar

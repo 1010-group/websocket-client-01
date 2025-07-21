@@ -18,7 +18,7 @@ import NotificationBell from './NavbarComponents/NotificationBell';
 import ThemeSwitcher from './NavbarComponents/ThemeSwitcher';
 
 
-const Navbar = () => {
+const GamesNavbar = () => {
     const user = useSelector((state) => state.auth.user);
     const selectedUser = useSelector((state) => state?.selectChat?.selectedUser);
     const dispatch = useDispatch();
@@ -108,8 +108,6 @@ const Navbar = () => {
         socket.on("personal_message", (data) => {
             console.log("data: ", data.message)
             toast.warning(data.message);
-            dispatch(logout());
-            navigate('/login');
         });
 
         return () => {
@@ -173,13 +171,7 @@ const Navbar = () => {
     const unreadCount = notifications.filter((notif) => !notif.read).length;
 
     return (
-        <div className="fixed top-5 right-10 z-[999] flex items-center gap-2">
-            <Calls selectedUser={selectedUser} currentUser={user} />
-            <NotificationBell
-                unreadCount={unreadCount}
-                notifications={notifications}
-                markAsRead={markAsRead}
-            />
+        <div className=" top-5 right-10 z-[999] flex items-center gap-2">
             <ThemeSwitcher theme={theme} setTheme={setTheme} />
 
             <UserDrawer
@@ -192,4 +184,4 @@ const Navbar = () => {
     );
 };
 
-export default Navbar;
+export default GamesNavbar;

@@ -7,7 +7,7 @@ const PrivateRouter = ({ children }) => {
   const user = useSelector(state => state.auth.isAuthenticated)
   const navigate = useNavigate()
 
-  console.log("INFO: ", user)
+  
 
   useEffect(() => {
     if (!user) {

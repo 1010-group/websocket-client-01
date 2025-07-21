@@ -28,7 +28,7 @@ const UserDrawer = ({ user, handleLogout, handleCopy, copied }) => (
               className="w-14 h-14 rounded-full border-2 border-cyan-600 shadow-cyan-600 shadow-2xl"
               src={
                 user?.image ||
-                "https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png"
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScdIYuCdg369Zi9PDQqmDljt26Co3bVUf4wA&s"
               }
               alt={user?.username}
             />

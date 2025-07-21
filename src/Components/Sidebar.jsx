@@ -1,4 +1,3 @@
-// src/Components/Sidebar.jsx
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -35,23 +34,13 @@ const Sidebar = () => {
   };
 
   const handleOpenChat = async (malumot) => {
-    if (malumot._id === user._id) {
-      navigate('/favorites');
-      return;
-    }
-
-    // Set selected user and wait for state to update before navigating
     dispatch(setSelectedUser(malumot));
-    
 
-    
-    // Ensure navigation happens after state update
     setTimeout(() => {
-
       navigate(`/chat/${malumot._id}`);
-            setLoading(false)
+      setLoading(false);
+    }, 100);
 
-    }, 0);
   };
 
   const handleOpenModal = (malumot) => {
@@ -84,6 +73,7 @@ const Sidebar = () => {
 
   const handleWarn = (userId) => {
     socket.emit('warn_user', { userId });
+
     socket.once('warn_result', (data) => {
       if (!data.success) {
         toast.error(data.message);
@@ -91,11 +81,13 @@ const Sidebar = () => {
       }
 
       setSelectedModalUser(data.user);
+
       dispatch(setOnlineUsers(
         onlineUsers.map((u) =>
           u._id === data.user._id ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned } : u
         )
       ));
+
       setFilteredUsers(
         filteredUsers.map((u) =>
           u._id === data.user._id ? { ...u, isWarn: data.user.isWarn, isBanned: data.user.isBanned } : u
@@ -103,57 +95,57 @@ const Sidebar = () => {
       );
 
       if (data.user.isBanned) {
-        if (data.user._id === user._id) {
-          toast.error(`Вы были заблокированы (3/3), ${data.user.username}`);
-        } else {
-          toast.success(`Пользователь ${data.user.username} успешно заблокирован.`);
-        }
+        toast.error(`Пользователь ${data.user.username} был заблокирован (3/3 предупреждений)`);
       } else {
         toast.warn(`Предупреждение для ${data.user.username}: ${data.user.isWarn}/3`);
       }
     });
   };
 
+
   useEffect(() => {
-    socket.on('delete_user_result', (data) => {
-      if (data.success) {
-        toast.success(data.message);
-        document.getElementById('my_modal_1')?.close();
-      } else {
-        toast.error(data.message);
+    socket.on('warn_result', ({ success, message, user }) => {
+      toast[success ? (user?.isBanned ? 'error' : 'warn') : 'error'](message);
+
+      if (success && user) {
+        setSelectedModalUser((prev) => (prev?._id === user._id ? user : prev));
+        dispatch(setOnlineUsers(
+          onlineUsers.map((u) => (u._id === user._id ? user : u))
+        ));
+        setFilteredUsers(
+          filteredUsers.map((u) => (u._id === user._id ? user : u))
+        );
       }
     });
 
     return () => {
-      socket.off('delete_user_result');
+      socket.off('warn_result');
     };
-  }, []);
+  }, [dispatch, onlineUsers, filteredUsers]);
 
-  const handleUnban = async (userId) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/users/unban/${userId}`, {
-        method: 'POST',
-      });
-      const data = await res.json();
 
-      if (!res.ok) {
-        toast.error(data.message || 'Ошибка разблокировки');
-        return;
-      }
+const handleUnban = (userId) => {
+  socket.emit("unban_user", { userId });
 
-      toast.success('Пользователь разблокирован');
+  socket.once("admin_result", (data) => {
+    if (data.success) {
+      toast.success("Пользователь разблокирован");
+
       setSelectedModalUser(data.user);
+
       dispatch(setOnlineUsers(
         onlineUsers.map((u) => (u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u))
       ));
+
       setFilteredUsers(
         filteredUsers.map((u) => (u._id === userId ? { ...u, isBanned: false, isWarn: 0 } : u))
       );
-    } catch (error) {
-      console.error(error);
-      toast.error('Ошибка разблокировки');
+    } else {
+      toast.error(data.message || "Ошибка разблокировки");
     }
-  };
+  });
+};
+
 
   useEffect(() => {
     socket.on('admin_result', ({ success, message, user }) => {
@@ -195,29 +187,39 @@ const Sidebar = () => {
 
       if (data.user._id === user._id) {
         toast.error('Вы были заблокированы.');
-        dispatch(logout());
-        navigate('/login');
+       
       }
     });
   };
 
+  // client/utils/admin.js или прямо в компоненте
+
   const makeAdmin = (userId, selectedId, role) => {
     if (!['owner', 'admin', 'moderator', 'user'].includes(role)) {
-      toast.error('Noto‘g‘ri rol tanlandi');
+      toast.error('Noto‘g‘ri rol tanlandi');   
       return;
     }
 
     setIsChangingRole(true);
-    socket.emit('make_admin', { userId, SelectedId: selectedId, role });
+    socket.off('admin_result'); // сброс старого обработчика
+    socket.emit('make_admin', { userId, selectedId, role });
+
     socket.once('admin_result', (res) => {
       setIsChangingRole(false);
       if (res.success) {
         toast.success(res.message);
+        if (res.user) {
+          dispatch(setOnlineUsers(
+            onlineUsers.map((u) => u._id === res.user._id ? { ...u, role: res.user.role } : u)
+          ));
+          setSelectedModalUser((prev) => prev && prev._id === res.user._id ? { ...prev, role: res.user.role } : prev);
+        }
       } else {
         toast.error(res.message || 'Ruxsat yo‘q');
       }
     });
   };
+
 
   const handleMute = async (userID, selectedUser, reason) => {
     try {

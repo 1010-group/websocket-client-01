@@ -5,7 +5,7 @@ import { FaPhoneSquareAlt } from 'react-icons/fa';
 import { BsFillCalendarDateFill } from 'react-icons/bs';
 import { MdCalendarMonth, MdOutlineDriveFileRenameOutline, MdPhone } from 'react-icons/md';
 import { FaPenNib, FaUserLarge } from "react-icons/fa6";
-import { IoMdAt } from 'react-icons/io';
+import { IoMdAt, IoMdSettings } from 'react-icons/io';
 import NotificationBell from './NotificationBell';
 import notificationSound from '../../assets/notification.wav';
 import errorSound from '../../assets/error.wav';
@@ -13,6 +13,7 @@ import socket from '../../socket';
 
 const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
 
+  const currentUser = useSelector((state) => state.auth.user);
   const [notifications, setNotifications] = useState([]);
   const notificationSoundRef = useRef(null);
   const errorSoundRef = useRef(null);
@@ -140,7 +141,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
   return (
     <div className="">
       <button className="btn" onClick={() => document.getElementById('my_modal_user').showModal()}>
-        Open User Modal
+        <IoMdSettings className="text-2xl text-primary text-shadow-xl text-shadow-primary"/>
       </button>
 
       <dialog id="my_modal_user" className="modal">
@@ -151,7 +152,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
               <div className="flex flex-col w-full gap-4">
                 <div className="flex flex-row-reverse w-full gap-2 mb-4 ">
                   <div className="ml- flex items-center justify-between">
-                    <div className="border-2 border-primary rounded-full p-1 shadow-primary shadow-2xl">
+                    <div className="p">
                       <NotificationBell
                         unreadCount={unreadCount}
                         notifications={notifications}
@@ -164,7 +165,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
                       className="w-14 h-14 rounded-full border-2 border-cyan-600 shadow-cyan-600 shadow-2xl"
                       src={
                         user?.image ||
-                        'https://static.vecteezy.com/system/resources/thumbnails/028/149/256/small_2x/3d-user-profile-icon-png.png'
+                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScdIYuCdg369Zi9PDQqmDljt26Co3bVUf4wA&sg'
                       }
                       alt={user?.username}
                     />
