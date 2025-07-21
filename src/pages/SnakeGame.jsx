@@ -4,12 +4,11 @@ import React, { useRef, useEffect, useState } from "react";
 export default function SnakeGame() {
   const canvasRef = useRef(null);
   const [score, setScore] = useState(0);
-  const [length, setLength] = useState(5);
   const [gameOver, setGameOver] = useState(false);
 
   const size = 20;
   const gridSize = 20;
-  const tickDelay = 200; // 200 мс на шаг — медленно и удобно
+  const tickDelay = 200;
 
   const snake = useRef([
     { x: 5, y: 10 },
@@ -36,7 +35,7 @@ export default function SnakeGame() {
   }
 
   const moveSnake = () => {
-    dir.current = nextDir.current; // плавное управление
+    dir.current = nextDir.current;
 
     const newHead = {
       x: snake.current[0].x + dir.current.x,
@@ -61,16 +60,14 @@ export default function SnakeGame() {
     // Добавляем голову
     snake.current = [newHead, ...snake.current];
 
-    // Еда?
+    // Если съели еду
     if (newHead.x === food.current.x && newHead.y === food.current.y) {
-      setLength((prev) => prev + 1);
       setScore((prev) => prev + 10);
       eatSound.current?.play();
       food.current = getRandomFood(snake.current);
     } else {
-      while (snake.current.length > length) {
-        snake.current.pop();
-      }
+      // Иначе просто удаляем хвост (не растём)
+      snake.current.pop();
     }
   };
 
@@ -146,7 +143,6 @@ export default function SnakeGame() {
     nextDir.current = { x: 1, y: 0 };
     food.current = getRandomFood(snake.current);
     setScore(0);
-    setLength(5);
     setGameOver(false);
   };
 
@@ -154,7 +150,7 @@ export default function SnakeGame() {
     <div className="flex flex-col items-center bg-black min-h-screen text-white py-4">
       <h1 className="text-3xl font-bold text-green-400 mb-2">🐍 Змейка</h1>
       <h2 className="mb-2">Очки: {score}</h2>
-      <h2 className="mb-4">Длина: {length}</h2>
+      <h2 className="mb-4">Длина: {snake.current.length}</h2>
       {gameOver && <h2 className="text-red-500 mb-4">Игра окончена!</h2>}
 
       <canvas
