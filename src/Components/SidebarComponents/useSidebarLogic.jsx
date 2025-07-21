@@ -135,9 +135,6 @@ const useSidebarLogic = () => {
     );
   };
 
-
-
-
   useEffect(() => {
     const handleOnlineUsers = (users) => {
       console.log("USERS: ", users)

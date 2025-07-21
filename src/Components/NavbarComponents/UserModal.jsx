@@ -10,6 +10,7 @@ import NotificationBell from './NotificationBell';
 import notificationSound from '../../assets/notification.wav';
 import errorSound from '../../assets/error.wav';
 import socket from '../../socket';
+import { toast } from 'react-toastify';
 
 const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
 
@@ -18,7 +19,6 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
   console.log("currenctUser: ", currentUser )
   const notificationSoundRef = useRef(null);
   const errorSoundRef = useRef(null);
-
 
   useEffect(() => {
     notificationSoundRef.current = new Howl({
