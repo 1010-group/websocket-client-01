@@ -142,7 +142,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
   return (
     <div className="">
       <button className="btn" onClick={() => document.getElementById('my_modal_user').showModal()}>
-        <IoMdSettings className="text-2xl text-primary text-shadow-xl text-shadow-primary" />
+        <IoMdSettings className="text-2xl text-primary text-shadow-xl text-shadow-primary"/>
       </button>
 
       <dialog id="my_modal_user" className="modal">

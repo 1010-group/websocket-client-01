@@ -168,47 +168,48 @@ const UserProfileModal = ({
                     )}
                   </div>
 
-                  {/* Role tabs */}
-                  <div className="flex flex-wrap w-full flex-1 gap-2">
-                    <div className="flex justify-center flex-col items-center w-full py-5">
-                      <p className="w-full px-3 mb-2">Роль:</p>
-                      <div role="tablist" className="tabs tabs-box">
-                        {['owner', 'admin', 'moderator', 'user'].map((role) => (
-                          <p
-                            key={role}
-                            role="tab"
-                            className={`tab ${selectedModalUser?.role === role
-                              ? `tab-active ${role === 'admin'
-                                ? 'text-primary'
-                                : role === 'moderator'
-                                  ? 'text-secondary'
-                                  : 'text-white'}`
-                              : ''
-                              }`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (
-                                selectedModalUser &&
-                                currentUser._id !== selectedModalUser._id &&
-                                !isChangingRole
-                              ) {
-                                onMakeAdmin(currentUser._id, selectedModalUser._id, role); // ✅ fixed name
-                              }
-                            }}
-                            disabled={isChangingRole}
-                          >
-                            {role === 'owner'
-                              ? 'Owner'
-                              : role === 'admin'
-                                ? 'Admin'
-                                : role === 'moderator'
-                                  ? 'Moderator'
-                                  : 'User'}
-                          </p>
-                        ))}
+                  {currentUser?.role === 'owner' && (
+                    <div className="flex flex-wrap w-full flex-1 gap-2">
+                      <div className="flex justify-center flex-col items-center w-full py-5">
+                        <p className="w-full px-3 mb-2">Роль:</p>
+                        <div role="tablist" className="tabs tabs-box">
+                          {['owner', 'admin', 'moderator', 'user'].map((role) => (
+                            <p
+                              key={role}
+                              role="tab"
+                              className={`tab ${selectedModalUser?.role === role
+                                ? `tab-active ${role === 'admin'
+                                  ? 'text-primary'
+                                  : role === 'moderator'
+                                    ? 'text-secondary'
+                                    : 'text-white'}`
+                                : ''
+                                }`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (
+                                  selectedModalUser &&
+                                  currentUser._id !== selectedModalUser._id &&
+                                  !isChangingRole
+                                ) {
+                                  onMakeAdmin(currentUser._id, selectedModalUser._id, role); // ✅ fixed name
+                                }
+                              }}
+                              disabled={isChangingRole || selectedModalUser?.role === 'owner'}
+                            >
+                              {role === 'owner'
+                                ? 'Owner'
+                                : role === 'admin'
+                                  ? 'Admin'
+                                  : role === 'moderator'
+                                    ? 'Moderator'
+                                    : 'User'}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

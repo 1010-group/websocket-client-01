@@ -11,17 +11,20 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
-import PrivateRouter from "./guard/PrivateRouter.jsx";
-import Chat from "./pages/Chat.jsx";
+import PrivateRouter from "./guard/PrivateRouter.jsx"
 import Favorites from "./pages/Favorites.jsx";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";  // <-- добавил ToastContainer
 import "react-toastify/dist/ReactToastify.css";
-import Games from "./pages/Games.jsx";
-import Shop from "./pages/Shop.jsx";
-import './index.css';
-import { immediate } from "tone";
 import App from "./App.jsx";
-// Определяем роуты
+import Chat from "./pages/Chat.jsx"
+import Games from "./pages/Games.jsx";
+import HangmanGame from "./Games/HangMan.jsx";
+import TicTacToe from "./Games/TicTacToe.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import Typer from "./Games/Typer.jsx";
+import Shop from "./pages/Shop.jsx";
+
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -56,6 +59,26 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/game",
+    element: <Games />,
+  },
+  {
+    path: "/game/hangman",
+    element: <HangmanGame />,
+  },
+  {
+    path: "/game/tic-tac-toe",
+    element: <TicTacToe />,
+  },
+  {
+    path: "/game/typer",
+    element: <Typer />,
+  },
+  {
+    path: "*",
+    element: <NotFound />
   },
 ]);
 

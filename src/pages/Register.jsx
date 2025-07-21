@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-
 const Register = () => {
   const [formData, setFormData] = useState({
-    username: "",    // @username (id)
-    fullName: "",    // Display name
+    username: "",
+    fullName: "",
     phone: "",
     password: "",
     confirmPassword: "",
@@ -31,16 +30,13 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/users/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
@@ -51,9 +47,9 @@ const Register = () => {
           typeof data.error === "string"
             ? data.error
             : data.message ||
-            (data.errors
-              ? Object.values(data.errors).join(", ")
-              : "Произошла ошибка");
+              (data.errors
+                ? Object.values(data.errors).join(", ")
+                : "Произошла ошибка");
         setError(message);
       }
     } catch (err) {
@@ -62,24 +58,26 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Левая часть с изображением (только на больших экранах) */}
       <div
-        className="w-360   bg-cover bg-center"
-        style={{
-          backgroundImage: "url('./illust.png')",
-        }}
-      />
-      <div className="w-1/2 bg-black text-white flex flex-col justify-center items-center p-8">
-        <h1 className="text-4xl font-semibold mb-4">Создайте аккаунт</h1>
+        className="hidden lg:block lg:w-1/2 bg-cover bg-center"
+        style={{ backgroundImage: "url('./illust.png')" }}
+      ></div>
+
+      {/* Правая часть с формой */}
+      <div className="w-full lg:w-1/2 bg-black text-white flex flex-col justify-center items-center p-6 sm:p-10">
+        <h1 className="text-3xl sm:text-4xl font-semibold mb-4">
+          Создайте аккаунт
+        </h1>
 
         {error && typeof error === "string" && (
           <p className="text-red-500 text-center mb-4">{error}</p>
         )}
 
-
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg"
+          className="w-full max-w-md bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg"
         >
           <input
             type="text"
@@ -154,7 +152,7 @@ const Register = () => {
 
         <p className="text-center mt-4">
           Уже есть аккаунт?{" "}
-          <Link to="/login" className="text-blue-500">
+          <Link to="/login" className="text-blue-500 underline">
             Войти
           </Link>
         </p>
