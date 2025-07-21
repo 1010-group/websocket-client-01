@@ -9,67 +9,70 @@ import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
 import { MdCallEnd } from "react-icons/md";
 import BottomNavbar from "./Components/NavbarComponents/BottomNavbar";
 
-
-
 const App = () => {
   const dispatch = useDispatch();
   const incomingCall = useSelector((state) => state.call.incomingCall);
+  const [callDuration, setCallDuration] = useState(0);
+  const callIntervalRef = useRef(null);
   const peerRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteAudioRef = useRef(null);
-  const [callDuration, setCallDuration] = useState(0);
-  const callIntervalRef = useRef(null);
 
-  const formatTime = (sec) => {
-    const m = String(Math.floor(sec / 60)).padStart(2, "0");
-    const s = String(sec % 60).padStart(2, "0");
-    return `${m}:${s}`;
-  };
-
-  useEffect(() => {
-    socket.on("incoming_call", ({ offer, caller, from }) => {
-      dispatch(setIncomingCall({ offer, caller, from }));
-      document.getElementById("incoming_call_modal")?.showModal();
-    });
-
-    socket.on("call_ended", cleanupCall);
-
-    socket.on("ice_candidate", ({ candidate }) => {
-      if (peerRef.current) {
-        peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-      }
-    });
-
-    socket.on("call_answered", async ({ answer }) => {
-      if (!peerRef.current) return;
-      await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-    });
-
-    return () => {
-      socket.off("incoming_call");
-      socket.off("call_ended");
-      socket.off("ice_candidate");
-      socket.off("call_answered");
-    };
-  }, [dispatch]);
-
+  // 🧽 Qo‘ng‘iroqni tugatish funksiyasi
   const cleanupCall = () => {
     peerRef.current?.close();
     peerRef.current = null;
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
+
     if (remoteAudioRef.current) {
       remoteAudioRef.current.pause();
       remoteAudioRef.current.srcObject = null;
     }
+
     clearInterval(callIntervalRef.current);
     setCallDuration(0);
+
     dispatch(clearIncomingCall());
     document.getElementById("incoming_call_modal")?.close();
   };
 
+  // ✅ Socket hodisalar
+  useEffect(() => {
+    const handleIncomingCall = ({ offer, caller, from }) => {
+      dispatch(setIncomingCall({ offer, caller, from }));
+      document.getElementById("incoming_call_modal")?.showModal();
+    };
+
+    const handleCallAnswered = async ({ answer }) => {
+      if (!peerRef.current) return;
+      await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+    };
+
+    const handleICE = ({ candidate }) => {
+      if (peerRef.current && candidate) {
+        peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+    };
+
+    socket.on("incoming_call", handleIncomingCall);
+    socket.on("call_answered", handleCallAnswered);
+    socket.on("ice_candidate", handleICE);
+    socket.on("call_ended", cleanupCall);
+
+    return () => {
+      socket.off("incoming_call", handleIncomingCall);
+      socket.off("call_answered", handleCallAnswered);
+      socket.off("ice_candidate", handleICE);
+      socket.off("call_ended", cleanupCall);
+    };
+  }, [dispatch]);
+
+  // ✅ Qo‘ng‘iroqni qabul qilish
   const handleAccept = async () => {
     if (!incomingCall) return;
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     localStreamRef.current = stream;
 
@@ -80,32 +83,32 @@ const App = () => {
         {
           urls: "turn:turn.xirsys.com:3478?transport=udp",
           username: "bekzodmirzaaliyev27Gmail.com",
-          credential: "6862442"
+          credential: "6862442",
         },
         {
           urls: "turn:turn.xirsys.com:3478?transport=tcp",
           username: "bekzodmirzaaliyev27Gmail.com",
-          credential: "6862442"
-        }
-      ]
+          credential: "6862442",
+        },
+      ],
     });
-    peerRef.current = peer;
 
+    peerRef.current = peer;
     stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
-    peer.onicecandidate = (event) => {
-      if (event.candidate) {
+    peer.onicecandidate = (e) => {
+      if (e.candidate) {
         socket.emit("ice_candidate", {
           targetId: incomingCall.from,
-          candidate: event.candidate,
+          candidate: e.candidate,
         });
       }
     };
 
-    peer.ontrack = (event) => {
-      if (remoteAudioRef.current && event.streams[0]) {
-        remoteAudioRef.current.srcObject = event.streams[0];
-        remoteAudioRef.current.play().catch((e) => console.error("Play error:", e));
+    peer.ontrack = (e) => {
+      if (remoteAudioRef.current && e.streams[0]) {
+        remoteAudioRef.current.srcObject = e.streams[0];
+        remoteAudioRef.current.play().catch((err) => console.error("play err:", err));
       }
     };
 
@@ -126,6 +129,7 @@ const App = () => {
     }, 1000);
   };
 
+  // ❌ Qo‘ng‘iroqni rad qilish
   const handleReject = () => {
     if (incomingCall?.from) {
       socket.emit("end_call", { targetId: incomingCall.from });
@@ -133,13 +137,22 @@ const App = () => {
     cleanupCall();
   };
 
+  const formatTime = (sec) => {
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   return (
     <div className="flex flex-col lg:flex-row h-screen">
+      {/* Sidebar */}
       <div className="w-full lg:w-3/12 border-r border-base-300">
         <Sidebar />
       </div>
+
+      {/* Main */}
       <div className="w-full lg:w-9/12 flex flex-col">
-        {/* ✅ lg:dan katta ekranlar uchun */}
+        {/* Navbar */}
         <div className="hidden lg:block">
           <Navbar />
         </div>
@@ -147,6 +160,7 @@ const App = () => {
           <BottomNavbar />
         </div>
 
+        {/* Router content */}
         <div className="flex-1 bg-base-100 flex justify-center items-center relative">
           <Outlet />
           <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
@@ -168,8 +182,7 @@ const App = () => {
         </div>
       </div>
 
-
-
+      {/* Incoming Call Modal */}
       {incomingCall && (
         <IncomingCallModal
           caller={incomingCall.caller}
