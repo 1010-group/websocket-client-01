@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom';
 
 const SearchBar = ({ onSearch }) => {
-    const { path } = useLocation ();
+    const { path } = useLocation();
     return (
         <div className="flex justify-center items-center flex-col ">
             <label className="input mb-1 flex items-center gap-2 bg-base-200 rounded-full p-2 w-full shadow-md shadow-primary">
@@ -34,15 +34,19 @@ const SearchBar = ({ onSearch }) => {
                     Games
                 </Link>
                 <Link
-                    to="/"
+                    to="/shop"
                     className={`tab ${path === '/shop' ? 'tab-active' : ''}`}
                 >
                     Shop
                 </Link>
+                <Link
+                    to="/inventory"
+                    className={`tab ${path === '/inventory' ? 'tab-active' : ''}`}
+                >
+                    Inventory
+                </Link>
             </div>
         </div>
-
-
     );
 };
 

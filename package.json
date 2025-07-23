@@ -15,6 +15,7 @@
     "axios": "^1.9.0",
     "cors": "^2.8.5",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.23.6",
     "howler": "^2.2.4",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
@@ -32,6 +33,7 @@
     "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.1",
     "sort-by": "^1.2.0",
+    "swiper": "^11.2.10",
     "tone": "^15.1.22",
     "use-sound": "^5.0.0"
   },

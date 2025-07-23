@@ -23,6 +23,7 @@ import TicTacToe from "./Games/TicTacToe.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import Typer from "./Games/Typer.jsx";
 import Shop from "./pages/Shop.jsx";
+import Inventory from "./pages/Inventory.jsx";
 
 
 const router = createBrowserRouter([
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: "shop",
         element: <Shop />,
+      },
+      {
+        path: "inventory",
+        element: <Inventory />,
       },
     ],
   },

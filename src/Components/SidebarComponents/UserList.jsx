@@ -1,7 +1,14 @@
 import React from 'react';
 
-const UserList = ({ user, currentUser, onOpenChat, onOpenModal, loading }) => {
-  
+const UserList = ({ user, currentUser, onOpenChat, onOpenModal }) => {
+  const frameStyles = {
+    gold: "ring-2 ring-yellow-400",
+    neon: "ring-2 ring-cyan-400 shadow-cyan-400 shadow-md",
+    red: "ring-2 ring-red-500",
+    rainbow: "ring-[3px] ring-offset-2 ring-offset-base-100 ring-gradient-to-r from-red-500 via-green-400 to-blue-500",
+  };
+
+  const avatarFrame = frameStyles[user?.avatarFrame] || ""; // default: no frame
 
   return (
     <div
@@ -10,19 +17,21 @@ const UserList = ({ user, currentUser, onOpenChat, onOpenModal, loading }) => {
     >
       <button onClick={(e) => { e.stopPropagation(); onOpenModal(user); }}>
         <img
-          className="w-12 h-12 rounded-full"
+          className={`size-10 bg-base-300 p-1 rounded-full object-cover ${avatarFrame}`}
           src={user.image || 'https://encrypted-tbn0.gstatic.com/images?q=tbnp://example.com/default-image.jpg'}
-          alt=""
+          alt={user.username}
         />
       </button>
+
       <div>
-        <p className={`${user?.role === 'owner' ? 'text-error' : ''} font-semibold ${user?.role === 'owner' ? 'text-shadow-md text-shadow-error' : ''}`}>
+        <p className={`${user?.role === 'owner' ? 'text-error text-shadow-md text-shadow-error' : 'font-medium'} font-medium text-sm`}>
           {user.username}
         </p>
-        <p className={user.status ? 'text-success' : 'text-error'}>
+        <p className={user.status ? 'text-success text-xs' : 'text-error text-xs'}>
           {user.status ? 'Online' : 'Offline'}
         </p>
       </div>
+
       <div className="flex-1 text-end text-xs">
         <div className="flex items-center gap-2 flex-1 justify-end relative">
           {user.isBanned ? (

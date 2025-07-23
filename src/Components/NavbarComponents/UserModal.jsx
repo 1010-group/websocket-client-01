@@ -27,7 +27,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
       preload: true,
       onloaderror: (id, error) => {
         console.error('Ошибка загрузки звука уведомления:', error);
-        toast.error('Не удалось загрузить звук уведомления');
+        // toast.error('Не удалось загрузить звук уведомления');
       },
     });
 
@@ -37,7 +37,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
       preload: true,
       onloaderror: (id, error) => {
         console.error('Ошибка загрузки звука ошибки:', error);
-        toast.error('Не удалось загрузить звук ошибки');
+        // toast.error('Не удалось загрузить звук ошибки');
       },
     });
 

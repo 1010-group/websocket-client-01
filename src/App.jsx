@@ -144,9 +144,9 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen">
+    <div className="flex flex-col lg:flex-row h-screen overflow-y-auto">
       {/* Sidebar */}
-      <div className="w-full lg:w-3/12 border-r border-base-300">
+      <div className="w-full min-h-screen h-full lg:w-3/12 border-r border-base-300">
         <Sidebar />
       </div>
 
