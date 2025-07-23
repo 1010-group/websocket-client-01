@@ -203,10 +203,10 @@ const Navbar = () => {
       {showInstallButton && (
         <button
           onClick={handleInstallClick}
-          className="text-white p-2 rounded-full shadow-md transition duration-300 hover:bg-purple-600/80 bg-transparent border border-purple-600 hover:scale-105"
-          title="Установить приложение"
+          className="btn btn-circle btn-neutral shadow-md transition duration-300 hover:scale-105 active:scale-95"
+          title="Скачать приложение"
         >
-          <TbWorldDownload size={27} />
+          <TbWorldDownload className="w-6 h-6" />
         </button>
       )}
 
