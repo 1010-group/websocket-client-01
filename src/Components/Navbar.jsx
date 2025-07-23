@@ -5,6 +5,8 @@ import { logout } from "../redux/slices/authSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Howl } from "howler";
+import { IoIosColorPalette } from "react-icons/io";
+import { TbWorldDownload } from "react-icons/tb";
 import socket from "../socket";
 import notificationSound from "../assets/notification.wav";
 import errorSound from "../assets/error.wav";
@@ -12,7 +14,6 @@ import Calls from "./Calls";
 import UserDrawer from "./NavbarComponents/UserDrawer";
 import NotificationBell from "./NavbarComponents/NotificationBell";
 import ThemeSwitcher from "./NavbarComponents/ThemeSwitcher";
-import { TbWorldDownload } from "react-icons/tb";
 
 const Navbar = () => {
   const user = useSelector((state) => state.auth.user);
@@ -24,11 +25,13 @@ const Navbar = () => {
   const [copied, setCopied] = useState(false);
   const notificationSoundRef = useRef(null);
   const errorSoundRef = useRef(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
 
   useEffect(() => {
     notificationSoundRef.current = new Howl({
       src: [notificationSound],
-      volume: 100,
+      volume: 1.0,
       preload: true,
       onloaderror: (id, error) => {
         console.error("Ошибка загрузки звука уведомления:", error);
@@ -38,7 +41,7 @@ const Navbar = () => {
 
     errorSoundRef.current = new Howl({
       src: [errorSound],
-      volume: 10,
+      volume: 0.1,
       preload: true,
       onloaderror: (id, error) => {
         console.error("Ошибка загрузки звука ошибки:", error);
@@ -164,9 +167,6 @@ const Navbar = () => {
 
   const unreadCount = notifications.filter((notif) => !notif.read).length;
 
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showInstallButton, setShowInstallButton] = useState(false);
-
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
@@ -199,30 +199,46 @@ const Navbar = () => {
   };
 
   return (
-    <div className="fixed top-5 right-10 z-[999] flex items-center gap-2">
+    <div className="fixed top-5 right-10 z-[999] flex items-center gap-3">
       {showInstallButton && (
         <button
           onClick={handleInstallClick}
-          className="btn btn-circle btn-neutral shadow-md transition duration-300 hover:scale-105 active:scale-95"
+          className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
           title="Скачать приложение"
         >
-          <TbWorldDownload className="w-6 h-6" />
+          <TbWorldDownload className="h-6 w-6" />
         </button>
       )}
 
-      {selectedUser && <Calls selectedUser={selectedUser} currentUser={user} />}
+      {selectedUser && (
+        <Calls
+          selectedUser={selectedUser}
+          currentUser={user}
+          className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
+        />
+      )}
 
       <NotificationBell
         unreadCount={unreadCount}
         notifications={notifications}
         markAsRead={markAsRead}
+        className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
       />
-      <ThemeSwitcher theme={theme} setTheme={setTheme} />
+
+      <ThemeSwitcher
+        theme={theme}
+        setTheme={setTheme}
+        className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
+      >
+        <IoIosColorPalette className="h-6 w-6" />
+      </ThemeSwitcher>
+
       <UserDrawer
         user={user}
         handleLogout={handleLogout}
         handleCopy={handleCopy}
         copied={copied}
+        className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
       />
     </div>
   );
