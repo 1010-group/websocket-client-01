@@ -80,7 +80,7 @@ const GamesNavbar = () => {
                 setNotifications(data);
             } catch (err) {
                 console.error('Ошибка загрузки уведомлений:', err);
-                toast.error('Ошибка загрузки уведомлений');
+                // toast.error('Ошибка загрузки уведомлений');
                 playErrorSound();
             }
         };

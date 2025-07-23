@@ -80,7 +80,7 @@ const Navbar = () => {
                 setNotifications(data);
             } catch (err) {
                 console.error('Ошибка загрузки уведомлений:', err);
-                toast.error('Ошибка загрузки уведомлений');
+                // toast.error('Ошибка загрузки уведомлений');
                 playErrorSound();
             }
         };
@@ -172,8 +172,52 @@ const Navbar = () => {
 
     const unreadCount = notifications.filter((notif) => !notif.read).length;
 
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+const [showInstallButton, setShowInstallButton] = useState(false);
+
+useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+        e.preventDefault(); // Отключаем автоматическое окно
+        setDeferredPrompt(e);
+        setShowInstallButton(true); // Показываем кнопку
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+}, []);
+
+
+const handleInstallClick = async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            toast.success('Приложение установлено!');
+        } else {
+            toast.info('Установка отменена');
+        }
+        setDeferredPrompt(null);
+        setShowInstallButton(false);
+    }
+};
+
+
     return (
-        <div className="fixed top-5 right-10 z-[999] flex items-center gap-2">
+        <div className=" fixed top-5 right-10 z-[999] flex items-center gap-2">
+{showInstallButton && (
+    <button
+        onClick={handleInstallClick}
+        className="bg-purple-600 hover:bg-purple-700 text-white text-sm px-2.5 py-1 rounded-md shadow-sm animate-pulse transition-colors duration-200"
+    >
+        Установить
+    </button>
+)}
+
+
+
             <Calls selectedUser={selectedUser} currentUser={user} />
             <NotificationBell
                 unreadCount={unreadCount}

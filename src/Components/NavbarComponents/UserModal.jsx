@@ -69,7 +69,7 @@ const UserModal = ({ user, handleLogout, handleCopy, copied, onClose }) => {
         setNotifications(data);
       } catch (err) {
         console.error('Ошибка загрузки уведомлений:', err);
-        toast.error('Ошибка загрузки уведомлений');
+        // toast.error('Ошибка загрузки уведомлений');
         playErrorSound();
       }
     };
