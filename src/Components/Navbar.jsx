@@ -200,21 +200,22 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-5 right-10 z-[999] flex items-center gap-3">
-      {showInstallButton && (
-        <button
-          onClick={handleInstallClick}
-          className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
-          title="Скачать приложение"
-        >
-          <TbWorldDownload className="h-6 w-6" />
-        </button>
-      )}
+     {showInstallButton && (
+  <button
+    onClick={handleInstallClick}
+    className="btn btn-circle rounded-full bg-base-100 border border-primary text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-primary/10 transition-all duration-300 hover:scale-105 active:scale-95"
+    title="Скачать приложение"
+  >
+    <TbWorldDownload className="h-6 w-6" />
+  </button>
+)}
+
 
       {selectedUser && (
         <Calls
           selectedUser={selectedUser}
           currentUser={user}
-          className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
+          className="btn btn-circle rounded-full bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
         />
       )}
 
@@ -222,13 +223,13 @@ const Navbar = () => {
         unreadCount={unreadCount}
         notifications={notifications}
         markAsRead={markAsRead}
-        className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
+        className="btn btn-circle rounded-full bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
       />
 
       <ThemeSwitcher
         theme={theme}
         setTheme={setTheme}
-        className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
+        className="btn btn-circle rounded-full bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
       >
         <IoIosColorPalette className="h-6 w-6" />
       </ThemeSwitcher>
@@ -238,7 +239,7 @@ const Navbar = () => {
         handleLogout={handleLogout}
         handleCopy={handleCopy}
         copied={copied}
-        className="btn btn-circle bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
+        className="btn btn-circle rounded-full bg-base-200 text-base-content h-12 w-12 flex items-center justify-center shadow-lg hover:bg-base-300 transition-all duration-300 hover:scale-105 active:scale-95"
       />
     </div>
   );

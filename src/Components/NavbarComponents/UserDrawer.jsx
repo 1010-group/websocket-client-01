@@ -10,7 +10,8 @@ const UserDrawer = ({ user, handleLogout, handleCopy, copied }) => (
     <div className="drawer-content">
       <label
         htmlFor="my-drawer"
-        className="btn bg-neonCyan hover:bg-cyan-400 shadow-neon-cyan transition duration-300 drawer-button"
+        className="btn w-12 h-12 min-h-0 p-0 rounded-full bg-base-100 border border-primary shadow-md hover:bg-primary/10 flex items-center justify-center drawer-button"
+
       >
         <IoSettingsSharp size={24} />
       </label>

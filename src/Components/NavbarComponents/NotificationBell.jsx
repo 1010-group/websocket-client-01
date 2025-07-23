@@ -2,13 +2,12 @@ import { IoMdNotifications } from "react-icons/io";
 
 const NotificationBell = ({ unreadCount, notifications, markAsRead }) => (
   <div className="dropdown dropdown-end">
-    {/* Bell button */}
     <div
       tabIndex={0}
       role="button"
-      className="btn relative bg-base-100 border border-primary hover:bg-primary/10 shadow-md w-12 h-12 rounded-full flex items-center justify-center"
+      className="btn w-12 h-12 min-h-0 p-0 rounded-full bg-base-100 border border-primary shadow-md hover:bg-primary/10 flex items-center justify-center"
     >
-      <IoMdNotifications className="text-2xl text-primary" />
+      <IoMdNotifications className="text-2xl text-base-content" />
       {unreadCount > 0 && (
         <span className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-error text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center animate-ping-once z-10">
           {unreadCount}
@@ -16,7 +15,6 @@ const NotificationBell = ({ unreadCount, notifications, markAsRead }) => (
       )}
     </div>
 
-    {/* Dropdown menu */}
     <ul
       tabIndex={0}
       className="dropdown-content menu bg-base-100 rounded-xl shadow-lg w-72 sm:w-80 max-h-96 overflow-y-auto z-[100] p-2"
@@ -59,7 +57,7 @@ const NotificationBell = ({ unreadCount, notifications, markAsRead }) => (
               )}
             </div>
           </li>
-        ))    
+        ))
       )}
     </ul>
   </div>

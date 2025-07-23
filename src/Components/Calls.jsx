@@ -1,4 +1,3 @@
-// ===== Calls.jsx (Xirsys TURN bilan) =====
 import React, { useEffect, useRef, useState } from 'react';
 import { IoIosCall } from 'react-icons/io';
 import { MdCallEnd } from 'react-icons/md';
@@ -6,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import socket from '../socket';
 import { setStatus } from '../redux/slices/callSlice';
 
-const Calls = ({ selectedUser, currentUser }) => {
+const Calls = ({ selectedUser, currentUser, className = '' }) => {
   const dispatch = useDispatch();
   const [status, setStatusText] = useState('Calling...');
   const [isCalling, setIsCalling] = useState(false);
@@ -119,7 +118,10 @@ const Calls = ({ selectedUser, currentUser }) => {
 
   return (
     <div>
-      <button className="btn text-2xl btn-soft btn-success" onClick={handleCall}>
+      <button
+        className={`btn text-2xl btn-soft btn-success ${className}`}
+        onClick={handleCall}
+      >
         <IoIosCall />
       </button>
 
@@ -127,7 +129,9 @@ const Calls = ({ selectedUser, currentUser }) => {
         <div className="modal-box w-full max-w-md">
           <div className="flex flex-col items-center py-4">
             <audio id="remote_audio" autoPlay controls className="mb-4" />
-            <figcaption className="text-center mt-2 text-accent animate-pulse">{status}</figcaption>
+            <figcaption className="text-center mt-2 text-accent animate-pulse">
+              {status}
+            </figcaption>
           </div>
           <div className="modal-action justify-center">
             <form method="dialog">
