@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { IoIosCall } from 'react-icons/io';
-import { MdCallEnd } from 'react-icons/md';
-import { useDispatch, useSelector } from 'react-redux';
-import socket from '../socket';
-import { setStatus } from '../redux/slices/callSlice';
+import React, { useEffect, useRef, useState } from "react";
+import { IoIosCall } from "react-icons/io";
+import { MdCallEnd } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import socket from "../socket";
+import { setStatus } from "../redux/slices/callSlice";
 
-const Calls = ({ selectedUser, currentUser, className = '' }) => {
+const Calls = ({ selectedUser, currentUser, className = "" }) => {
   const dispatch = useDispatch();
-  const [status, setStatusText] = useState('Calling...');
+  const [status, setStatusText] = useState("Calling...");
   const [isCalling, setIsCalling] = useState(false);
 
   const peerRef = useRef(null);
@@ -17,31 +17,34 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
   const handleCall = async () => {
     const target = onlineUsers.find((u) => u._id === selectedUser._id);
     if (!target?.socketId) {
-      alert('❌ Foydalanuvchi offline yoki socketId yo‘q.');
+      alert("❌ Foydalanuvchi offline yoki socketId yo‘q.");
       return;
     }
 
     setIsCalling(true);
-    document.getElementById('my_modal_call')?.showModal();
+    document.getElementById("my_modal_call")?.showModal();
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: true,
+    });
     localStreamRef.current = stream;
 
     const peer = new RTCPeerConnection({
       iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:global.stun.twilio.com:3478' },
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:global.stun.twilio.com:3478" },
         {
-          urls: 'turn:turn.xirsys.com:3478?transport=udp',
-          username: 'bekzodmirzaaliyev27Gmail.com',
-          credential: '6862442'
+          urls: "turn:turn.xirsys.com:3478?transport=udp",
+          username: "bekzodmirzaaliyev27Gmail.com",
+          credential: "6862442",
         },
         {
-          urls: 'turn:turn.xirsys.com:3478?transport=tcp',
-          username: 'bekzodmirzaaliyev27Gmail.com',
-          credential: '6862442'
-        }
-      ]
+          urls: "turn:turn.xirsys.com:3478?transport=tcp",
+          username: "bekzodmirzaaliyev27Gmail.com",
+          credential: "6862442",
+        },
+      ],
     });
 
     peerRef.current = peer;
@@ -50,7 +53,7 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
 
     peer.onicecandidate = (event) => {
       if (event.candidate) {
-        socket.emit('ice_candidate', {
+        socket.emit("ice_candidate", {
           targetId: target.socketId,
           candidate: event.candidate,
         });
@@ -58,7 +61,7 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
     };
 
     peer.ontrack = (event) => {
-      const remoteAudio = document.getElementById('remote_audio');
+      const remoteAudio = document.getElementById("remote_audio");
       if (remoteAudio && event.streams[0]) {
         remoteAudio.srcObject = event.streams[0];
         remoteAudio.play().catch((e) => console.log("play error:", e));
@@ -68,7 +71,7 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
 
-    socket.emit('call_user', {
+    socket.emit("call_user", {
       targetId: target.socketId,
       offer,
       caller: {
@@ -84,45 +87,50 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
     peerRef.current?.close();
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     const target = onlineUsers.find((u) => u._id === selectedUser._id);
-    socket.emit('end_call', { targetId: target?.socketId });
+    socket.emit("end_call", { targetId: target?.socketId });
     setIsCalling(false);
-    setStatusText('Calling...');
-    document.getElementById('my_modal_call')?.close();
+    setStatusText("Calling...");
+    document.getElementById("my_modal_call")?.close();
   };
 
   useEffect(() => {
-    socket.on('call_answered', async ({ answer }) => {
+    socket.on("call_answered", async ({ answer }) => {
       if (!peerRef.current) return;
-      await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-      setStatusText('Connected');
-      dispatch(setStatus('in-call'));
+      await peerRef.current.setRemoteDescription(
+        new RTCSessionDescription(answer)
+      );
+      setStatusText("Connected");
+      dispatch(setStatus("in-call"));
     });
 
-    socket.on('ice_candidate', ({ candidate }) => {
+    socket.on("ice_candidate", ({ candidate }) => {
       const peer = peerRef.current;
-      if (peer && peer.signalingState !== 'closed') {
-        peer.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
+      if (peer && peer.signalingState !== "closed") {
+        peer
+          .addIceCandidate(new RTCIceCandidate(candidate))
+          .catch(console.error);
       }
     });
 
-    socket.on('call_ended', () => {
+    socket.on("call_ended", () => {
       endCall();
     });
 
     return () => {
-      socket.off('call_answered');
-      socket.off('ice_candidate');
-      socket.off('call_ended');
+      socket.off("call_answered");
+      socket.off("ice_candidate");
+      socket.off("call_ended");
     };
   }, []);
 
   return (
     <div>
       <button
-        className={`btn text-2xl btn-soft btn-success ${className}`}
         onClick={handleCall}
+        className="btn btn-circle rounded-full bg-success border border-primary text-white h-12 w-12 flex items-center justify-center shadow-lg hover:bg-success/90 transition-all duration-300 hover:scale-105 active:scale-95"
+        title="Позвонить"
       >
-        <IoIosCall />
+        <IoIosCall className="h-6 w-6" />
       </button>
 
       <dialog id="my_modal_call" className="modal">
@@ -135,7 +143,10 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
           </div>
           <div className="modal-action justify-center">
             <form method="dialog">
-              <button className="btn btn-error btn-soft text-2xl" onClick={endCall}>
+              <button
+                className="btn btn-error btn-soft text-2xl"
+                onClick={endCall}
+              >
                 <MdCallEnd />
               </button>
             </form>
@@ -147,3 +158,4 @@ const Calls = ({ selectedUser, currentUser, className = '' }) => {
 };
 
 export default Calls;
+  
