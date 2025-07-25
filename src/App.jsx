@@ -154,7 +154,7 @@ const App = () => {
       <div className="w-full lg:w-9/12 flex flex-col">
         {/* Navbar */}
         <div className="hidden lg:block">
-          <Navbar />
+          {/* <Navbar /> */}
         </div>
         <div className="w-full lg:hidden">
           <BottomNavbar />
