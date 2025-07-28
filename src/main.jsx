@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound.jsx";
 import Typer from "./Games/Typer.jsx";
 import Shop from "./pages/Shop.jsx";
 import Inventory from "./pages/Inventory.jsx";
+import Welcome from "./pages/Welcome.jsx";
 
 
 const router = createBrowserRouter([
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       </PrivateRouter>
     ),
     children: [
+      {
+        path: "/",
+        element: <Welcome />,
+      },
       {
         path: "chat/:chatId",
         element: <Chat />,

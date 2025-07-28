@@ -85,7 +85,7 @@ const Inventory = () => {
   const isOwned = (itemId) => inventory.some(item => item.id === itemId);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-purple-950/50 to-slate-900">
+    <div className="h-screen overflow-y-auto w-full bg-gradient-to-br from-slate-950 via-purple-950/50 to-slate-900">
       {/* Header */}
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-black/20 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4">

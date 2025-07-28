@@ -154,14 +154,14 @@ const App = () => {
       <div className="w-full lg:w-9/12 flex flex-col">
         {/* Navbar */}
         <div className="hidden lg:block">
-          {/* <Navbar /> */}
+          <Navbar />
         </div>
         <div className="w-full lg:hidden">
           <BottomNavbar />
         </div>
 
         {/* Router content */}
-        <div className="flex-1 bg-base-100 flex justify-center items-center relative">
+        <div className="flex-1 bg-base-100  flex justify-center items-center relative">
           <Outlet />
           <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
 

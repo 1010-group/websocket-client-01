@@ -120,13 +120,14 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-base-100 flex-1">
-      <div className="container bg-base-200 h-[10%] p-4 shadow mb-2 flex items-center gap-4">
-        <button onClick={() => navigate("/")} className="md:hidden p-2 m-2">
-          <FaChevronLeft />
+    <div className="flex flex-col h-screen  bg-gradient-to-b from-[#0F172A] via-[#0D1B30] to-[#0F172A] border-r border-slate-800 to-base-100 flex-1">
+      {/* Top bar */}
+      <div className="bg-base-200 h-[10%] p-4 shadow-md  bg-gradient-to-b from-[#0F172A] via-[#0D1B30] to-[#0F172A] border-r border-slate-800 flex items-center gap-4 border-b border-base-300">
+        <button onClick={() => navigate("/")} className="md:hidden p-2">
+          <FaChevronLeft className="text-base-content" />
         </button>
         <div>
-          <h2 className="text-lg font-bold">
+          <h2 className="text-lg font-bold text-base-content">
             {selectedUser?.username || "Пользователь не выбран"}
           </h2>
           <p className={selectedUser?.status ? "text-success" : "text-error"}>
@@ -146,62 +147,71 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="flex-1 bg-base-100 rounded-md shadow p-4 overflow-y-auto">
+      {/* Messages area */}
+      <div className="flex-1 pl-5 pt-4 pr-16 pb-24 overflow-y-auto space-y-4">
         {chatMessages.map((msg, index) => {
           const isMe = msg.from === currentUser._id;
+
           return (
             <div
               key={index}
-              className={`mb-4 flex items-end ${
-                isMe ? "justify-end" : "justify-start"
-              }`}
+              className={`flex items-end gap-3 ${isMe ? "justify-end" : "justify-start"}`}
             >
+              {/* Avatar left (for others) */}
               {!isMe && (
                 <img
-                  className="size-10 rounded-full mr-2"
+                  className="w-10 h-10 rounded-full ring-2 ring-primary object-cover"
                   src={selectedUser?.image || "https://via.placeholder.com/150"}
-                  alt=""
+                  alt="avatar"
                 />
               )}
 
-              <div
-                className={`max-w-[80%] ${isMe ? "text-right" : "text-left"}`}
-              >
-                <p className="text-sm font-semibold mb-1">
+              {/* Message container */}
+              <div className={`max-w-[80%] ${isMe ? "text-right" : "text-left"}`}>
+                <p className="text-xs font-semibold mb-1 text-base-content/60 truncate">
                   {isMe ? "Me" : selectedUser?.username}
                 </p>
+
                 <div
-                  className={`inline-block px-4 py-2 rounded-2xl break-words max-w-[90vw] sm:max-w-md md:max-w-xl lg:max-w-2xl ${
-                    isMe
-                      ? "bg-base-200 text-base-content"
-                      : "bg-primary text-primary-content"
-                  }`}
+                  className={`inline-block px-4 py-2 rounded-2xl shadow-md transition-all whitespace-pre-wrap break-all
+              bg-gradient-to-br
+              ${isMe
+                      ? "from-blue-600 via-blue-500 to-blue-400 text-white"
+                      : "from-purple-600 via-purple-500 to-pink-500 text-white"}
+            `}
                 >
                   {msg.text}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
+
+                <div className="text-[10px] text-base-content/50 mt-1">
                   {moment(msg.timestamp).calendar()}
                 </div>
               </div>
 
+              {/* Avatar right (for current user) */}
               {isMe && (
                 <img
-                  className="size-10 rounded-full ml-2"
+                  className="w-10 h-10 rounded-full ring-2 ring-secondary object-cover"
                   src={currentUser.image || "https://via.placeholder.com/150"}
-                  alt=""
+                  alt="avatar"
                 />
               )}
             </div>
           );
         })}
+
+        {/* Scroll to bottom ref */}
         <div ref={bottomRef} />
       </div>
 
-      <div className="mt-2 flex gap-2 bg-base-300 p-3 rounded-md items-center">
+
+
+      {/* Input */}
+      <div className="bg-base-200 p-2 shadow-inner rounded-t-xl flex gap-3 items-center border-t border-base-300">
         <input
           type="text"
           placeholder="Xabar yozing..."
-          className="w-full p-2 border rounded text-sm outline-none focus:ring-2 focus:ring-primary transition"
+          className="w-full px-4 py-2 rounded-full bg-base-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
           value={message}
           onChange={(e) => {
             setMessage(e.target.value);
@@ -213,12 +223,13 @@ const Chat = () => {
         />
         <button
           onClick={handleSendMessage}
-          className="bg-base-200 text-base-content p-2 rounded hover:opacity-80 transition"
+          className="btn btn-sm btn-circle bg-primary text-white hover:opacity-90"
         >
-          <IoSendSharp size={20} />
+          <IoSendSharp size={18} />
         </button>
       </div>
     </div>
+
   );
 };
 

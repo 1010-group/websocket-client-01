@@ -5,25 +5,30 @@ import UserList from '../SidebarComponents/UserList';
 const UserListRenderer = ({ loading, users, currentUser, onOpenChat, onOpenModal }) => {
   if (loading) {
     return (
-      <div className="flex justify-center items-center flex-1 h-8/10">
-        <span className="loading loading-infinity loading-xl"></span>
+      <div className="flex justify-center items-center h-[80%]">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
 
   if (users.length === 0) {
-    return <p className="text-gray-400">No users online yet</p>;
+    return <p className="text-center text-gray-400 italic mt-4">No users online yet</p>;
   }
 
-  return users.map((u) => (
-    <UserList
-      key={u._id}
-      user={u}
-      currentUser={currentUser}
-      onOpenChat={onOpenChat}
-      onOpenModal={onOpenModal}
-    />
-  ));
+  return (
+    <div className="space-y-3 px-3 py-2 overflow-y-auto max-h-full">
+      {users.map((u, idx) => (
+        <UserList
+          key={u._id}
+          index={idx + 1}
+          user={u}
+          currentUser={currentUser}
+          onOpenChat={onOpenChat}
+          onOpenModal={onOpenModal}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default UserListRenderer;
