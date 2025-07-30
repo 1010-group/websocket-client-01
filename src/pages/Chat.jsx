@@ -120,9 +120,9 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen  bg-gradient-to-b from-[#0F172A] via-[#0D1B30] to-[#0F172A] border-r border-slate-800 to-base-100 flex-1">
+    <div className="flex flex-col h-screen  bg-gradient-to-b from-[#0F172A] via-[#0D1B30]  border-r border-slate-800 to-base-100 flex-1">
       {/* Top bar */}
-      <div className="bg-base-200 h-[10%] p-4 shadow-md  bg-gradient-to-b from-[#0F172A] via-[#0D1B30] to-[#0F172A] border-r border-slate-800 flex items-center gap-4 border-b border-base-300">
+      <div className="bg-base-200 h-[10%] p-4 shadow-md  bg-gradient-to-b from-[#0F172A] via-[#0D1B30] to-[#0F172A] border-r  flex items-center gap-4 border-b border-base-300">
         <button onClick={() => navigate("/")} className="md:hidden p-2">
           <FaChevronLeft className="text-base-content" />
         </button>
@@ -151,7 +151,6 @@ const Chat = () => {
       <div className="flex-1 pl-5 pt-4 pr-16 pb-24 overflow-y-auto space-y-4">
         {chatMessages.map((msg, index) => {
           const isMe = msg.from === currentUser._id;
-
           return (
             <div
               key={index}
@@ -203,8 +202,6 @@ const Chat = () => {
         {/* Scroll to bottom ref */}
         <div ref={bottomRef} />
       </div>
-
-
 
       {/* Input */}
       <div className="bg-base-200 p-2 shadow-inner rounded-t-xl flex gap-3 items-center border-t border-base-300">

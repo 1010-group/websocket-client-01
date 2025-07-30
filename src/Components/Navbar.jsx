@@ -199,7 +199,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="xl:fixed bottom-20 right-5 z-[999] flex flex-col items-center gap-3">
+    <div className="max-[968px]:hidden fixed bottom-20 right-5 z-[999] flex flex-col items-center gap-3">
       {showInstallButton && (
         <button
           onClick={handleInstallClick}

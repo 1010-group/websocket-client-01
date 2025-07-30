@@ -5,20 +5,20 @@ import { VitePWA } from "vite-plugin-pwa";
 
 const manifest = {
   name: "Mars Chat",
-  short_name: "Chat",
+  short_name: "Mars Chat",
   start_url: "/",
   display: "standalone",
   background_color: "#ffffff",
   theme_color: "#8936FF",
   icons: [
     {
-      src: "/icon512_rounded.png",
+      src: "/logo.png",
       sizes: "512x512",
       type: "image/png",
       purpose: "any"
     },
     {
-      src: "/icon512_maskable.png",
+      src: "/logo.png",
       sizes: "512x512",
       type: "image/png",
       purpose: "maskable"
