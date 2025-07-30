@@ -60,7 +60,7 @@ const Sidebar = () => {
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center gap-3 mb-2">
           <div className=" rounded-xl">
-            <img src="/public/logo.png" className='size-16' alt="" />
+            <img src="/logo.png" className='size-16' alt="" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">Online Users</h2>
