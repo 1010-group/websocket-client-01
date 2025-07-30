@@ -27,6 +27,7 @@ import Inventory from "./pages/Inventory.jsx";
 import Welcome from "./pages/Welcome.jsx";
 
 
+
 const router = createBrowserRouter([
   {
     path: "/",

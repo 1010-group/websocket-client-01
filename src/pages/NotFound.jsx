@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import FuzzyText from '../Components/FuzzyText';
+import FuzzyText from '../Components/ReactBits/FuzzyText';
 
 const NotFound = () => {
   const baseIntensity = 0.21;

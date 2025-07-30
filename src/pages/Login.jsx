@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../redux/slices/authSlice";
-import socket from "../socket";
 import { useNavigate, Link } from "react-router-dom";
+import socket from "../socket";
+import { toast } from "react-toastify";
+import Aurora from "../Components/ReactBits/Aurora";
 
 const Login = () => {
   const [phone, setPhone] = useState("");
@@ -13,23 +15,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!phone || !password) {
       setError("Заполните все поля.");
       return;
     }
 
-    const server = true;
-    const loginURL = server
-      ? "https://websocket-server-01.onrender.com/api/users/login"
-      : "http://localhost:5000/api/users/login";
+    const loginURL =
+      "https://websocket-server-01.onrender.com/api/users/login";
 
     try {
       const response = await fetch(loginURL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, password }),
       });
 
@@ -38,6 +35,7 @@ const Login = () => {
       if (response.ok) {
         dispatch(loginSuccess({ user: data.user }));
         socket.emit("user_connected", data.user);
+        toast.success("Успешный вход!");
         navigate("/");
       } else {
         setError(data.message || "Ошибка при входе");
@@ -49,52 +47,69 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Левая часть: изображение (скрыта на мобилках) */}
-      <div className="hidden lg:block lg:w-2/3 h-64 lg:h-screen">
-        <img
-          src="./illust.png"
-          className="w-full h-full object-cover object-top"
-          alt="Login Illustration"
+    <div className="min-h-screen flex items-center justify-center relative">
+      {/* Фон Aurora */}
+      <div className="absolute inset-0 -z-10">
+        <Aurora
+          colorStops={["blue", "red", "white"]}
+          blend={0.5}
+          amplitude={1.0}
+          speed={0.5}
         />
       </div>
 
-      {/* Правая часть: форма */}
-      <div className="w-full lg:w-1/3 bg-black text-white flex flex-col justify-center items-center p-6 sm:p-10">
-        <h1 className="text-3xl sm:text-4xl font-semibold mb-2 sm:mb-4">Добро пожаловать!</h1>
-        <p className="text-md sm:text-lg mb-4 sm:mb-8">Войдите в вашу учетную запись.</p>
+      <div className="w-full max-w-md p-8 rounded-lg backdrop-blur-xl shadow-xl text-base-content bg-white/5">
+        <h2 className="text-3xl font-semibold text-center mb-6 text-primary">
+          Вход в аккаунт
+        </h2>
 
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-md bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg"
-        >
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Телефон"
-            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Пароль"
-            className="input input-bordered p-3 w-full mb-4 bg-gray-700 text-white rounded-lg"
-          />
+        {error && (
+          <div className="alert alert-error mb-4 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="label">
+              <span className="label-text font-medium">Телефон</span>
+            </label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+998 90 123 45 67"
+              className="input input-bordered input-primary w-full"
+            />
+          </div>
+
+          <div>
+            <label className="label">
+              <span className="label-text font-medium">Пароль</span>
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="input input-bordered input-primary w-full"
+            />
+          </div>
+
           <button
             type="submit"
-            className="btn btn-primary w-full p-3 mt-4 rounded-lg"
+            className="btn btn-primary w-full mt-2"
           >
             Войти
           </button>
         </form>
 
-        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
-
-        <p className="text-center mt-4">
+        <p className="mt-6 text-center text-base-content/70">
           Нет аккаунта?{" "}
-          <Link to="/register" className="text-blue-500 underline">
+          <Link to="/register" className="link link-primary font-medium">
             Зарегистрироваться
           </Link>
         </p>
@@ -104,7 +119,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
-
-// 909314353
