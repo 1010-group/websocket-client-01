@@ -1,43 +1,68 @@
-import React, { useState, useRef } from "react";
-import { Phone, Lock, LogIn, Shield, Eye, EyeOff } from "lucide-react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { loginSuccess } from "../redux/slices/authSlice"; // ✅ import your login action
+import { loginSuccess } from "../redux/slices/authSlice";
+import socket from "../socket";
+import { useNavigate, Link } from "react-router-dom";
+
+// SVG иконки
+const ShieldCheck = () => (
+  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+  </svg>
+);
+
+const Lock = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+  </svg>
+);
+
+const Phone = () => (
+  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+  </svg>
+);
+
+const Users = () => (
+  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.46 1.46 0 0 0 18.5 7c-.8 0-1.54.5-1.85 1.26l-1.92 5.75c-.3.9.47 1.99 1.41 1.99H18v6h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zm1.5 1h-2c-.83 0-1.5.67-1.5 1.5v6h2v7h3v-7h2v-6c0-.83-.67-1.5-1.5-1.5zM8 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm-.5 3c-.8 0-1.54.5-1.85 1.26L3.73 15.75c-.3.9.47 1.99 1.41 1.99H7v6h2v-6h2.5c.83 0 1.5-.67 1.5-1.5V12c0-.83-.67-1.5-1.5-1.5h-2z" />
+  </svg>
+);
+
+const Fingerprint = () => (
+  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-2.04-1.34-3.3 0-2.58 2.07-4.68 4.62-4.68s4.68 2.09 4.68 4.68c0 .22-.18.4-.4.4s-.4-.18-.4-.4c0-2.14-1.78-3.88-3.88-3.88-2.14 0-3.82 1.74-3.82 3.88 0 1.04.37 2.04 1.04 2.79.15.17.13.44-.04.59-.08.08-.18.12-.29.12z" />
+  </svg>
+);
+
+const ArrowRight = () => (
+  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+  </svg>
+);
 
 const Login = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef(null);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const handleMouseMove = (e) => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      setMousePosition({ x, y });
-    }
-  };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
     if (!phone || !password) {
       setError("Заполните все поля.");
-      setIsLoading(false);
       return;
     }
+    setError("");
+
+    const server = true;
+    const loginURL = server
+      ? "https://websocket-server-01.onrender.com/api/users/login"
+      : "http://localhost:5000/api/users/login";
 
     try {
-      const response = await fetch("https://websocket-server-01.onrender.com/api/users/login", {
+      const response = await fetch(loginURL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,236 +72,234 @@ const Login = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        setError(data.message || "Неверный номер или пароль");
-        setIsLoading(false);
-        return;
+      if (response.ok) {
+        dispatch(loginSuccess({ user: data.user }));
+        socket.emit("user_connected", data.user);
+        navigate("/");
+      } else {
+        setError(data.message || "Ошибка при входе");
       }
-
-      // ✅ Dispatch user to Redux
-      dispatch(loginSuccess(data));
-
-      // ✅ Navigate to home or chat
-      navigate("/");
-
-      setIsLoading(false);
     } catch (error) {
-      console.error("Ошибка при входе:", error);
-      setError("Произошла ошибка при входе.");
-      setIsLoading(false);
+      setError("Ошибка при подключении к серверу.");
+      console.error("Ошибка при входе:", error.message);
     }
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="min-h-screen relative overflow-hidden"
-      onMouseMove={handleMouseMove}
-    >
-      {/* Dynamic Background with Mouse Tracking */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        {/* Mouse-following gradient orb */}
+    <div className="min-h-screen flex">
+      {/* Левая часть - Мотивационная секция */}
+      <div
+        className="hidden lg:flex lg:w-2/3 relative overflow-hidden items-center justify-center"
+        style={{
+          background:
+            "linear-gradient(135deg, #1e1e60 0%, #2e1065 30%, #0ea5e9 100%)",
+        }}
+      >
+        {/* Анимированные элементы фона */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
         <div
-          className="absolute w-96 h-96 rounded-full opacity-30 transition-all duration-700 ease-out"
-          style={{
-            left: `${mousePosition.x}%`,
-            top: `${mousePosition.y}%`,
-            transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(147, 51, 234, 0.2) 50%, transparent 70%)',
-            filter: 'blur(60px)',
-          }}
-        />
+          className="absolute bottom-20 right-20 w-80 h-80 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute top-1/2 left-10 w-48 h-48 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"
+          style={{ animationDelay: "4s" }}
+        ></div>
 
-        {/* Animated floating orbs */}
-        <div className="absolute top-20 left-20 w-72 h-72 bg-pink-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
-        <div className="absolute top-40 right-20 w-80 h-80 bg-violet-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-20 left-40 w-64 h-64 bg-purple-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
-        <div className="absolute bottom-40 right-10 w-72 h-72 bg-indigo-500/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Основной контент */}
+        <div className="relative z-10 text-center max-w-2xl px-8">
+          <div className="mb-8">
+            <ShieldCheck />
+            <h1
+              className="text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+              style={{
+                background:
+                  "linear-gradient(90deg, #0ea5e9, #ec4899, #a21caf)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 4px 20px #0ea5e955)",
+              }}
+            >
+              Безопасность
+              <br /> Превыше Всего
+            </h1>
+            <p className="text-xl text-gray-200 mb-8 leading-relaxed">
+              Пройдите авторизацию для получения доступа к защищенной системе
+            </p>
+          </div>
 
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="w-full h-full"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`,
-              backgroundSize: '40px 40px'
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
-        {/* Left Side: Illustration */}
-        <div className="hidden lg:flex lg:w-3/5 items-center justify-center p-12">
-          <div
-            className="max-w-lg text-center transform transition-all duration-700"
-            style={{
-              transform: `translate(${(mousePosition.x - 50) * 0.05}px, ${(mousePosition.y - 50) * 0.05}px)`,
-            }}
-          >
-            <div className="mb-8">
-              <div
-                className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 rounded-3xl flex items-center justify-center shadow-2xl transition-transform duration-500 hover:scale-110 hover:rotate-3"
-                style={{
-                  boxShadow: `0 25px 50px -12px rgba(236, 72, 153, 0.4), 0 0 60px rgba(147, 51, 234, 0.3)`,
-                }}
-              >
-                <Shield className="w-16 h-16 text-white" />
-              </div>
+          {/* Особенности безопасности */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div
+              className="p-6 rounded-2xl backdrop-blur-md border border-cyan-500 border-opacity-30"
+              style={{
+                background: "rgba(14, 165, 233, 0.1)",
+                boxShadow: "0 0 30px rgba(14, 165, 233, 0.2)",
+              }}
+            >
+              <Fingerprint className="text-cyan-400 mb-3" />
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Биометрическая защита
+              </h3>
+              <p className="text-gray-300 text-sm">
+                Современные алгоритмы шифрования
+              </p>
             </div>
-            <h2 className="text-4xl font-bold text-white mb-4 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
-              Защищенный вход
-            </h2>
-            <p className="text-xl text-purple-200 leading-relaxed">
-              Войдите в свою учетную запись и получите доступ к современному интерфейсу
+
+            <div
+              className="p-6 rounded-2xl backdrop-blur-md border border-pink-500 border-opacity-30"
+              style={{
+                background: "rgba(236, 72, 153, 0.1)",
+                boxShadow: "0 0 30px rgba(236, 72, 153, 0.2)",
+              }}
+            >
+              <Users className="text-pink-400 mb-3" />
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Проверка личности
+              </h3>
+              <p className="text-gray-300 text-sm">
+                Многоуровневая аутентификация
+              </p>
+            </div>
+          </div>
+
+          <div className="text-gray-300">
+            <p className="text-lg mb-4">🔐 Ваши данные под надежной защитой</p>
+            <p className="text-sm opacity-75">
+              Используем передовые технологии шифрования SSL/TLS
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Right Side: Login Form */}
-        <div className="w-full lg:w-2/5 flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md">
-            {/* Glassmorphism Card with Mouse Interaction */}
-            <div
-              className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl transition-all duration-500 hover:bg-white/10 hover:border-white/20"
-              style={{
-                transform: `translate(${(mousePosition.x - 50) * -0.02}px, ${(mousePosition.y - 50) * -0.02}px)`,
-                boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 80px rgba(147, 51, 234, 0.1)`,
-              }}
-            >
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent">
-                  Добро пожаловать!
-                </h1>
-                <p className="text-purple-200">Войдите в вашу учетную запись</p>
-              </div>
-
-              <div className="space-y-6">
-                {/* Phone Input */}
-                <div className="group">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <Phone className="h-5 w-5 text-purple-300 group-focus-within:text-pink-300 transition-colors duration-300" />
-                    </div>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Телефон"
-                      className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:border-pink-300/30 transition-all duration-300 placeholder-purple-200/70 text-white text-sm font-medium shadow-lg hover:bg-white/10"
-                    />
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-indigo-500/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Password Input */}
-                <div className="group">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <Lock className="h-5 w-5 text-purple-300 group-focus-within:text-pink-300 transition-colors duration-300" />
-                    </div>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Пароль"
-                      className="w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400/50 focus:border-pink-300/30 transition-all duration-300 placeholder-purple-200/70 text-white text-sm font-medium shadow-lg hover:bg-white/10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 hover:scale-110 transition-transform duration-200"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-purple-300 hover:text-pink-300 transition-colors duration-200" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-purple-300 hover:text-pink-300 transition-colors duration-200" />
-                      )}
-                    </button>
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-indigo-500/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="relative overflow-hidden w-full py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="relative z-10 flex items-center gap-3">
-                    {isLoading ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Вход...
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="h-5 w-5" />
-                        Войти
-                      </>
-                    )}
-                  </span>
-                </button>
-
-                {/* Error Message */}
-                {error && (
-                  <div
-                    className="bg-red-500/10 backdrop-blur-md border border-red-400/20 text-red-200 px-6 py-4 rounded-xl text-sm text-center shadow-lg transform transition-all duration-300"
-                    style={{
-                      animation: 'shake 0.5s ease-in-out',
-                    }}
-                  >
-                    {error}
-                  </div>
-                )}
-
-                {/* Register Link */}
-                <div className="text-center pt-6 border-t border-white/10">
-                  <p className="text-purple-200/80 text-lg">
-                    Нет аккаунта?{' '}
-                    <button
-                      type="button"
-                      onClick={() => { navigate('/register') }}
-                      className="text-pink-300 font-semibold hover:text-pink-200 transition-colors duration-300 underline decoration-pink-300/50 hover:decoration-pink-200/50 underline-offset-4"
-                    >
-                      Зарегистрироваться
-                    </button>
-                  </p>
-                </div>
-              </div>
+      {/* Правая часть - Форма входа */}
+      <div
+        className="w-full lg:w-1/3 flex items-center justify-center p-6 lg:p-12"
+        style={{
+          background: "linear-gradient(180deg, #1a1a3e 0%, #2d1b69 100%)",
+        }}
+      >
+        <div className="w-full max-w-md">
+          {/* Заголовок формы */}
+          <div className="text-center mb-8">
+            <div className="mb-6">
+              <Lock
+                className="mx-auto text-cyan-400"
+                style={{ filter: "drop-shadow(0 0 15px #0ea5e9)" }}
+              />
             </div>
-
-            {/* Mobile Logo with Mouse Interaction */}
-            <div
-              className="lg:hidden text-center mt-8 transition-transform duration-500"
+            <h2
+              className="text-3xl font-bold mb-2"
               style={{
-                transform: `translate(${(mousePosition.x - 50) * 0.01}px, ${(mousePosition.y - 50) * 0.01}px)`,
+                background:
+                  "linear-gradient(90deg, #0ea5e9, #ec4899)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 2px 12px #0ea5e9aa)",
               }}
             >
-              <div className="inline-flex items-center space-x-3 text-purple-300">
-                <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg shadow-lg transition-transform duration-300 hover:scale-110" />
-                <span className="font-semibold text-lg">Secure App</span>
+              Вход в систему
+            </h2>
+            <p className="text-gray-300">Введите ваши учетные данные</p>
+          </div>
+
+          {/* Форма */}
+          <div
+            className="p-8 rounded-3xl shadow-2xl"
+            style={{
+              background: "rgba(16, 16, 40, 0.95)",
+              boxShadow:
+                "0 0 40px 10px rgba(58, 150, 255, 0.25), 0 0 0 4px rgba(139,92,246,0.15) inset",
+              border: "1.5px solid rgba(34,211,238,0.18)",
+            }}
+          >
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Поле телефона */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Phone className="text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Введите номер телефона"
+                  className="w-full pl-12 pr-4 py-4 bg-[#18183a] text-white rounded-xl border-none outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400 text-lg transition-all duration-300"
+                  style={{
+                    boxShadow:
+                      phone !== ""
+                        ? "0 0 16px 2px #0ea5e9aa"
+                        : "0 0 0 0 transparent",
+                  }}
+                />
+              </div>
+
+              {/* Поле пароля */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Введите пароль"
+                  className="w-full pl-12 pr-4 py-4 bg-[#18183a] text-white rounded-xl border-none outline-none focus:ring-2 focus:ring-pink-400 placeholder-gray-400 text-lg transition-all duration-300"
+                  style={{
+                    boxShadow:
+                      password !== ""
+                        ? "0 0 16px 2px #ec4899aa"
+                        : "0 0 0 0 transparent",
+                  }}
+                />
+              </div>
+
+              {/* Кнопка входа */}
+              <button
+                type="submit"
+                className="w-full p-4 rounded-xl font-bold text-lg flex items-center justify-center space-x-2 transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #0ea5e9, #a21caf, #ec4899)",
+                  color: "#fff",
+                  boxShadow: "0 8px 32px 0 #a21caf55",
+                }}
+              >
+                <span>Войти в систему</span>
+                <ArrowRight />
+              </button>
+            </form>
+
+            {/* Сообщение об ошибке */}
+            {error && (
+              <div className="mt-6 p-4 bg-red-900 bg-opacity-50 backdrop-blur-sm border border-red-500 border-opacity-50 rounded-xl">
+                <p className="text-red-300 text-center font-medium">
+                  ⚠️ {error}
+                </p>
+              </div>
+            )}
+
+   
+            {/* Дополнительные опции */}
+            <div className="mt-6 text-center space-y-4">
+              <div className="border-t border-gray-600 pt-4">
+                <p className="text-gray-300">
+                  Нет аккаунта?{" "}
+                  <Link
+                    to="/register"
+                    className="text-cyan-400 hover:text-pink-400 underline font-medium transition-colors duration-300 cursor-pointer"
+                  >
+                    Создать аккаунт
+                  </Link>
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-          20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-        
-        .group:hover .absolute {
-          opacity: 1;
-        }
-      `}</style>
     </div>
   );
 };
 
 export default Login;
+// ...existing code...
