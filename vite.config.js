@@ -18,7 +18,7 @@ const manifest = {
       purpose: "any"
     },
     {
-      src: "/logo.png",
+      src: "/icon512_maskable.png",
       sizes: "512x512",
       type: "image/png",
       purpose: "maskable"
