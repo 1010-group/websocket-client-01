@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { RotateCcw, Trophy, Skull, Target, Zap, Award, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import socket from '../socket';
 
 const WORDS = [
   'JAVASCRIPT', 'REACT', 'COMPUTER', 'PROGRAMMING', 'DEVELOPER',
   'ALGORITHM', 'FUNCTION', 'VARIABLE', 'COMPONENT', 'INTERFACE',
   'DATABASE', 'FRAMEWORK', 'LIBRARY', 'TYPESCRIPT', 'FRONTEND',
   'BACKEND', 'RESPONSIVE', 'ANIMATION', 'DEBUGGING', 'TESTING',
-  'BEKZOD', 'JAFARBEK', 'GEY', 'ABUBAKIR', 'JONKA'
+  'BEKZOD', 'JAFARBEK', 'API', 'ABUBAKIR', 'WORDS', ' '
 ];
 
 const MAX_WRONG_GUESSES = 6;
@@ -25,44 +27,76 @@ const HangmanGame = () => {
     bestStreak: 0
   });
 
+  // --- КОИНЫ ---
+  const [earnedCoins, setEarnedCoins] = useState(0);
+  const [serverCoins, setServerCoins] = useState(0);
+  const currentUser = useSelector((state) => state.auth.user);
+  const [coinsGiven, setCoinsGiven] = useState(false);
+
+  // Получаем коины с сервера при заходе (только запрос, без начисления!)
+  useEffect(() => {
+    if (currentUser?._id) {
+      socket.emit('get_user_stats', { userId: currentUser._id });
+      const handler = ({ coins }) => setServerCoins(coins || 0);
+      socket.on('user_stats', handler);
+      return () => socket.off('user_stats', handler);
+    }
+  }, [currentUser]);
+
+  // Функция начисления коинов (только при выигрыше)
+  const sendCoinsToServer = useCallback((wrongGuessesCount) => {
+    if (!currentUser?._id) return;
+    let coins = 0;
+    if (wrongGuessesCount === 0) coins = 20;
+    else if (wrongGuessesCount <= 2) coins = 15;
+    else coins = 10;
+    setEarnedCoins(coins);
+
+    socket.emit('typing_test_complete', {
+      userId: currentUser._id,
+      coins,
+      bestWpm: 0,
+      newTest: {
+        wpm: 0,
+        accuracy: 0,
+        errors: wrongGuessesCount,
+        time: 0,
+        date: new Date().toISOString(),
+        correctChars: 0,
+        totalChars: 0,
+        game: 'hangman',
+        win: true,
+      },
+    });
+    socket.emit('get_user_stats', { userId: currentUser._id });
+  }, [currentUser]);
+
+  // Следим за завершением игры и начисляем коины только при выигрыше и только один раз
+  useEffect(() => {
+    if (gameStatus === 'won' && !coinsGiven) {
+      sendCoinsToServer(wrongGuesses.length);
+      setCoinsGiven(true);
+    }
+    if (gameStatus === 'lost' && !coinsGiven) {
+      setCoinsGiven(true); // проигрыш — коины не начисляем
+    }
+    // eslint-disable-next-line
+  }, [gameStatus, coinsGiven, wrongGuesses.length]);
+
+  // Сброс флага при старте новой игры
   const initializeGame = useCallback(() => {
     const randomWord = WORDS[Math.floor(Math.random() * WORDS.length)];
     setCurrentWord(randomWord);
     setGuessedLetters(new Set());
     setWrongGuesses([]);
     setGameStatus('playing');
+    setEarnedCoins(0);
+    setCoinsGiven(false);
   }, []);
 
   useEffect(() => {
     initializeGame();
   }, [initializeGame]);
-
-  useEffect(() => {
-    const wordLetters = new Set(currentWord.split(''));
-    const guessedWordLetters = new Set(
-      [...guessedLetters].filter(letter => currentWord.includes(letter))
-    );
-
-    if (wrongGuesses.length >= MAX_WRONG_GUESSES) {
-      setGameStatus('lost');
-      setStats(prev => ({
-        ...prev,
-        losses: prev.losses + 1,
-        currentStreak: 0
-      }));
-    } else if ([...wordLetters].every(letter => guessedWordLetters.has(letter))) {
-      setGameStatus('won');
-      setStats(prev => {
-        const newStreak = prev.currentStreak + 1;
-        return {
-          ...prev,
-          wins: prev.wins + 1,
-          currentStreak: newStreak,
-          bestStreak: Math.max(prev.bestStreak, newStreak)
-        };
-      });
-    }
-  }, [guessedLetters, wrongGuesses, currentWord]);
 
   const handleLetterGuess = (letter) => {
     if (gameStatus !== 'playing' || guessedLetters.has(letter)) return;
@@ -73,6 +107,31 @@ const HangmanGame = () => {
 
     if (!currentWord.includes(letter)) {
       setWrongGuesses(prev => [...prev, letter]);
+    }
+
+    // Проверка на выигрыш/проигрыш
+    const wordLetters = new Set(currentWord.split(''));
+    const guessedWordLetters = new Set(
+      [...newGuessedLetters].filter(l => currentWord.includes(l))
+    );
+    if ([...wordLetters].every(l => guessedWordLetters.has(l))) {
+      setGameStatus('won');
+      setStats(prev => {
+        const newStreak = prev.currentStreak + 1;
+        return {
+          ...prev,
+          wins: prev.wins + 1,
+          currentStreak: newStreak,
+          bestStreak: Math.max(prev.bestStreak, newStreak)
+        };
+      });
+    } else if (wrongGuesses.length + 1 >= MAX_WRONG_GUESSES && !currentWord.includes(letter)) {
+      setGameStatus('lost');
+      setStats(prev => ({
+        ...prev,
+        losses: prev.losses + 1,
+        currentStreak: 0
+      }));
     }
   };
 
@@ -91,7 +150,7 @@ const HangmanGame = () => {
       '  │     │',
       '  │     O',
       '  │     │',
-      '  │    /│\\',
+      '  │    /|\\',
       '  │    / \\',
       '──┴────────'
     ];
@@ -123,6 +182,16 @@ const HangmanGame = () => {
           <p className="text-base-content/70 text-lg">
             Guess the programming word before it's too late!
           </p>
+          <div className="mt-4">
+            <span className="badge badge-warning text-lg">
+              💰 Coins: {serverCoins}
+            </span>
+            {earnedCoins > 0 && (
+              <span className="badge badge-success text-lg ml-2">
+                +{earnedCoins} за игру
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

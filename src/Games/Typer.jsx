@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaKeyboard, FaRedo, FaClock, FaChartLine } from 'react-icons/fa';
-import {  useNavigate } from 'react-router-dom';
+import { FaRedo, FaClock, FaChartLine } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import socket from '../socket';
 
 const TypingTest = () => {
-     const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const [texts] = useState([
         "the quick brown fox jumps over the lazy dog and runs through the forest while the sun shines brightly in the clear blue sky making everything look beautiful and peaceful",
@@ -26,8 +28,13 @@ const TypingTest = () => {
     const [errors, setErrors] = useState(0);
     const [correctChars, setCorrectChars] = useState(0);
     const [totalChars, setTotalChars] = useState(0);
-    const [bestWpm, setBestWpm] = useState(localStorage.getItem('bestWpm') || 0);
-    const [testHistory, setTestHistory] = useState(JSON.parse(localStorage.getItem('testHistory') || '[]'));
+
+    // Всё с сервера:
+    const [bestWpm, setBestWpm] = useState(0);
+    const [testHistory, setTestHistory] = useState([]);
+    const [earnedCoins, setEarnedCoins] = useState(0);
+
+    const currentUser = useSelector((state) => state.auth.user);
 
     const inputRef = useRef(null);
     const timerRef = useRef(null);
@@ -58,7 +65,6 @@ const TypingTest = () => {
         } else {
             clearInterval(timerRef.current);
         }
-
         return () => clearInterval(timerRef.current);
     }, [isActive, timeLeft]);
 
@@ -115,13 +121,7 @@ const TypingTest = () => {
         setIsActive(false);
         setIsCompleted(true);
 
-        // Save best WPM
-        if (wpm > bestWpm) {
-            setBestWpm(wpm);
-            localStorage.setItem('bestWpm', wpm.toString());
-        }
-
-        // Save test history
+        // Всё только через сервер!
         const testResult = {
             wpm,
             accuracy,
@@ -132,10 +132,38 @@ const TypingTest = () => {
             totalChars
         };
 
-        const newHistory = [testResult, ...testHistory.slice(0, 9)]; // Keep last 10 tests
-        setTestHistory(newHistory);
-        localStorage.setItem('testHistory', JSON.stringify(newHistory));
+        let coins = 0;
+        coins += correctChars;
+        coins += Math.floor(wpm / 10) * 5;
+        if (accuracy >= 95) coins += 10;
+        // bestWpm обновится после ответа сервера
+
+        setEarnedCoins(coins);
+
+        if (currentUser?._id) {
+            socket.emit('typing_test_complete', {
+                userId: currentUser._id,
+                coins,
+                bestWpm: wpm, // сервер сам сравнит
+                newTest: testResult,
+            });
+            socket.emit('get_user_stats', { userId: currentUser._id });
+        }
     };
+
+    // Получаем статистику с сервера
+    useEffect(() => {
+        if (currentUser?._id) {
+            socket.emit('get_user_stats', { userId: currentUser._id });
+
+            socket.on('user_stats', ({ coins, bestWpm, history }) => {
+                setEarnedCoins(coins || 0);
+                setBestWpm(bestWpm || 0);
+                setTestHistory(history || []);
+            });
+        }
+        return () => socket.off('user_stats');
+    }, [currentUser]);
 
     const resetTest = () => {
         setUserInput('');
@@ -186,9 +214,7 @@ const TypingTest = () => {
     };
 
     // Кнопка которая ничего не делает
-    const uselessButton = () => {
-        // Эта функция ничего не делает, как и просили
-    };
+    const uselessButton = () => {};
 
     const getWpmColor = () => {
         if (wpm >= 80) return 'text-success';
@@ -213,6 +239,10 @@ const TypingTest = () => {
                         <button onClick={() => navigate(-1)} className="btn btn-outline btn-error">
                             Назад
                         </button>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                        <div className="stat-title text-sm">Earned Coins</div>
+                        <div className="stat-value text-warning text-xl">💰 {earnedCoins}</div>
                     </div>
                 </div>
                 <div className="navbar-center">
@@ -286,6 +316,7 @@ const TypingTest = () => {
                                         type="text"
                                         value={userInput}
                                         onChange={handleInputChange}
+                                        onPaste={(e) => e.preventDefault()}
                                         disabled={isCompleted || timeLeft === 0}
                                         className="input input-bordered w-full text-lg font-mono tracking-wide focus:input-primary"
                                         placeholder={isCompleted || timeLeft === 0 ? "Test completed! Click restart to try again." : "Start typing..."}
@@ -318,8 +349,6 @@ const TypingTest = () => {
                                 <FaRedo />
                                 Restart Test
                             </button>
-
-                            {/* Кнопка которая ничего не делает */}
                             <button
                                 className="btn btn-outline btn-lg gap-2"
                                 onClick={uselessButton}
@@ -335,7 +364,6 @@ const TypingTest = () => {
                         <div className="card bg-base-100 shadow-xl">
                             <div className="card-body">
                                 <h2 className="card-title text-xl mb-4">Recent Tests</h2>
-
                                 {testHistory.length === 0 ? (
                                     <div className="text-center text-base-content/60 py-8">
                                         <FaChartLine className="text-4xl mx-auto mb-2 opacity-50" />
